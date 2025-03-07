@@ -5,6 +5,7 @@ import json
 import subprocess
 import argparse
 import requests
+import loguru 
 from datetime import datetime
 
 def get_current_time():
