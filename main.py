@@ -17,11 +17,7 @@ def get_current_date():
 def is_docker():
     return os.path.exists('/.dockerenv')
 
-def fetch_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-n", "--name", required=not is_docker(), help="Streamer name")
-    args = parser.parse_args()
-    return args.name
+
 
 def load_config(streamer_name):
     config_file = f"{streamer_name}.config"
@@ -77,7 +73,12 @@ def process_video(stream_source_url, upload_service, video_title, video_descript
 
 def main():
     print(f"[{get_current_time()}] Starting AutoVOD")
-    streamer_name = fetch_args()
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-n", "--name", required=not is_docker(), help="Streamer name")
+    args = parser.parse_args()
+    
+    streamer_name = args.name
     print(f"[{get_current_time()}] Selected streamer: {streamer_name}")
 
     config_content = load_config(streamer_name)
