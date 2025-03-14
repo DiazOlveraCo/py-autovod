@@ -17,8 +17,6 @@ def get_current_date():
 def is_docker():
     return os.path.exists('/.dockerenv')
 
-
-
 def load_config(streamer_name):
     config_file = f"{streamer_name}.config"
     if not os.path.isfile(config_file):
