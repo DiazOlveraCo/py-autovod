@@ -144,7 +144,6 @@ venv.bak/
 /lib 
 
 pyvenv.cfg 
-*.config
 lib64
 
 # mypy

@@ -1,5 +1,11 @@
-import argparse, subprocess, json, time, sys, os
+import os
+import sys
+import time
+import json
+import subprocess
+import argparse
 import requests
+import configparser
 from loguru import logger
 from datetime import datetime
 
@@ -11,23 +17,25 @@ logger.add(
     colorize=True
 )
 
-def get_current_time():
-    return datetime.now().strftime("%H:%M:%S")
+def load_config(streamer_name):
+    config = configparser.ConfigParser()
+    
+    config_file = f"{streamer_name}.ini"
+    found_file = None
+    
+    if os.path.isfile(config_file):
+        found_file = config_file
+    
+    if not found_file:
+        logger.error("No config file found")
+        sys.exit(1)
 
-def get_current_date():
-    return datetime.now().strftime("%d-%m-%y")
+    config.read(found_file)
+    logger.info(f"Loaded configuration from {found_file}")
+    return config
 
 def is_docker():
     return os.path.exists('/.dockerenv')
-
-def load_config(streamer_name):
-    config_file = f"{streamer_name}.config"
-    if not os.path.isfile(config_file):
-        logger.error("Config file is missing")
-        sys.exit(1)
-
-    with open(config_file, "r") as file:
-        return file.read()
 
 def determine_source(stream_source, streamer_name):
     sources = {
@@ -35,13 +43,16 @@ def determine_source(stream_source, streamer_name):
         "kick": f"kick.com/{streamer_name}",
         "youtube": f"youtube.com/@{streamer_name}/live"
     }
-    return sources.get(stream_source, None)
+    return sources.get(stream_source.lower(), None)
 
 def check_stream_live(url):
     result = subprocess.run(["streamlink", url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return result.returncode == 0
 
 def fetch_metadata(api_url, streamer_name):
+    if not api_url:
+        return None, None
+        
     response = requests.get(f"{api_url}/info/{streamer_name}")
     if response.status_code != 200:
         return None, None
@@ -49,29 +60,135 @@ def fetch_metadata(api_url, streamer_name):
     data = response.json()
     return data.get("stream_title", ""), data.get("stream_game", "")
 
-def process_video(stream_source_url, upload_service, video_title, video_description, video_playlist):
+def process_video(stream_source_url, config, streamer_name, video_title, video_description):
+    upload_service = config['upload']['service'].lower()
+    quality = config['streamlink']['quality']
+    date_str = datetime.now().strftime("%d-%m-%Y")
+    
     if upload_service == "youtube":
         metadata = {
-            "title": video_title,
-            "privacyStatus": "public",
-            "description": video_description,
-            "playlistTitles": [video_playlist]
+            "title": video_title or config['youtube']['title'].format(
+                streamer_name=streamer_name,
+                date=date_str
+            ),
+            "privacyStatus": config['youtube']['visibility'],
+            "description": video_description or config['youtube']['description'],
+            "playlistTitles": [config['youtube']['playlist'].format(
+                streamer_name=streamer_name
+            )]
         }
         with open(f"/tmp/input.json", "w") as file:
             json.dump(metadata, file)
 
-        # streamlink 
-        # ffmpeg -i input.ts -c copy output.mp4
-
-        result = subprocess.run(["streamlink", "-o","stream.ts", stream_source_url, "best"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        result = subprocess.run(
+            ["streamlink", "-o", "stream.ts", stream_source_url, quality],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
         return result.returncode == 0
 
     elif upload_service == "rclone":
-        temp_file = "stream_temp.mp4"
-        result = subprocess.run(["streamlink", stream_source_url, "-o", temp_file, "best"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        #if result.returncode == 0:
-        #   return subprocess.run(["rclone", "copyto", temp_file, f"remote:{temp_file}"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+        remote = config['rclone']['remote']
+        if not remote:
+            logger.error("Rclone remote not configured")
+            return False
+            
+        filename = config['rclone']['filename'].format(
+            streamer_name=streamer_name,
+            date=date_str
+        )
+        fileext = config['rclone']['fileext']
+        temp_file = f"{filename}.{fileext}"
+        
+        result = subprocess.run(
+            ["streamlink", stream_source_url, "-o", temp_file, quality],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        
+        if result.returncode == 0 and config.getboolean('encoding', 're_encode'):
+            logger.info("Re-encoding video...")
+            codec = config['encoding']['codec']
+            crf = config['encoding']['crf']
+            preset = config['encoding']['preset']
+            
+            encoded_file = f"encoded_{temp_file}"
+            result = subprocess.run([
+                "ffmpeg", "-i", temp_file,
+                "-c:v", codec,
+                "-crf", crf,
+                "-preset", preset,
+                encoded_file
+            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            
+            if result.returncode == 0:
+                os.remove(temp_file)
+                temp_file = encoded_file
+            else:
+                logger.error("Re-encoding failed")
+                if not config.getboolean('upload', 'save_on_fail'):
+                    os.remove(temp_file)
+                return False
+        
+        if result.returncode == 0:
+            remote_path = config['rclone']['directory'].strip('/')
+            if remote_path:
+                remote_path = f"{remote_path}/{temp_file}"
+            else:
+                remote_path = temp_file
+                
+            result = subprocess.run(
+                ["rclone", "copyto", temp_file, f"{remote}:{remote_path}"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            
+            if not config.getboolean('upload', 'save_on_fail'):
+                os.remove(temp_file)
+                
+            return result.returncode == 0
+            
         return False
+
+    elif upload_service == "local":
+        filename = config['local']['filename'].format(
+            streamer_name=streamer_name,
+            date=date_str
+        )
+        fileext = config['local']['extension']
+        output_file = f"{filename}.{fileext}"
+        
+        result = subprocess.run(
+            ["streamlink", stream_source_url, "-o", output_file, quality],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        
+        if result.returncode == 0 and config.getboolean('encoding', 're_encode'):
+            logger.info("Re-encoding video...")
+            codec = config['encoding']['codec']
+            crf = config['encoding']['crf']
+            preset = config['encoding']['preset']
+            
+            encoded_file = f"encoded_{output_file}"
+            result = subprocess.run([
+                "ffmpeg", "-i", output_file,
+                "-c:v", codec,
+                "-crf", crf,
+                "-preset", preset,
+                encoded_file
+            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            
+            if result.returncode == 0:
+                os.remove(output_file)
+                os.rename(encoded_file, output_file)
+            else:
+                logger.error("Re-encoding failed")
+                if not config.getboolean('upload', 'save_on_fail'):
+                    os.remove(output_file)
+                return False
+                
+        return result.returncode == 0
 
     return False
 
@@ -85,8 +202,8 @@ def main():
     streamer_name = args.name
     logger.info(f"Selected streamer: {streamer_name}")
 
-    # config_content = load_config(streamer_name)
-    stream_source = "twitch"  # Extract this from the config content dynamically
+    config = load_config(streamer_name)
+    stream_source = config['source']['stream_source']
     stream_source_url = determine_source(stream_source, streamer_name)
 
     if not stream_source_url:
@@ -96,14 +213,23 @@ def main():
     while True:
         if check_stream_live(stream_source_url):
             logger.info("Stream is live")
-            video_title, video_description = None, None #fetch_metadata("https://twitch.tv/", streamer_name)
+            
+            video_title = None
+            video_description = None
+            
+            if config.getboolean('source', 'api_calls'):
+                video_title, video_description = fetch_metadata(
+                    config['source']['api_url'],
+                    streamer_name
+                )
 
-            if not video_title:
-                video_title = "Default Title"
-            if not video_description:
-                video_description = "Default Description"
-
-            upload_success = process_video(stream_source_url, "rclone", video_title, video_description, "Gaming")
+            upload_success = process_video(
+                stream_source_url,
+                config,
+                streamer_name,
+                video_title,
+                video_description
+            )
 
             if upload_success:
                 logger.success("Stream uploaded successfully")
