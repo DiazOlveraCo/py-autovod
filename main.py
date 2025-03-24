@@ -65,9 +65,9 @@ def process_video(stream_source_url, upload_service, video_title, video_descript
 
     elif upload_service == "rclone":
         temp_file = "stream_temp.mp4"
-        result = subprocess.run(["streamlink", stream_source_url, "-o", temp_file], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        if result.returncode == 0:
-            return subprocess.run(["rclone", "copyto", temp_file, f"remote:{temp_file}"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+        result = subprocess.run(["streamlink", stream_source_url, "-o", temp_file, "best"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        #if result.returncode == 0:
+        #   return subprocess.run(["rclone", "copyto", temp_file, f"remote:{temp_file}"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
         return False
 
     return False
@@ -100,7 +100,7 @@ def main():
             if not video_description:
                 video_description = "Default Description"
 
-            upload_success = process_video(stream_source_url, "youtube", video_title, video_description, "Gaming")
+            upload_success = process_video(stream_source_url, "rclone", video_title, video_description, "Gaming")
 
             if upload_success:
                 print(f"[{get_current_time()}] Stream uploaded successfully")
@@ -110,7 +110,7 @@ def main():
         else:
             print(f"[{get_current_time()}] Stream is offline. Retrying in 60 seconds...")
 
-        time.sleep(60)
+        time.sleep(10)
 
 if __name__ == "__main__":
     main()
