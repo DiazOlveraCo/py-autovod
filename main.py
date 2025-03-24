@@ -57,7 +57,10 @@ def process_video(stream_source_url, upload_service, video_title, video_descript
         with open(f"/tmp/input.json", "w") as file:
             json.dump(metadata, file)
 
-        result = subprocess.run(["streamlink", stream_source_url, "-O", "|", "youtubeuploader", "-metaJSON", "/tmp/input.json", "-filename", "-"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        # streamlink 
+        # ffmpeg -i input.ts -c copy output.mp4
+
+        result = subprocess.run(["streamlink", "-o","stream.ts" stream_source_url, "best"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return result.returncode == 0
 
     elif upload_service == "rclone":
@@ -90,7 +93,7 @@ def main():
     while True:
         if check_stream_live(stream_source_url):
             print(f"[{get_current_time()}] Stream is live")
-            video_title, video_description = fetch_metadata("https://api.example.com", streamer_name)
+            video_title, video_description = None, None #fetch_metadata("https://twitch.tv/", streamer_name)
 
             if not video_title:
                 video_title = "Default Title"
