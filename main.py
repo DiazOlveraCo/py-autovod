@@ -80,11 +80,7 @@ def process_video(stream_source_url, config, streamer_name, video_title, video_d
         with open(f"/tmp/input.json", "w") as file:
             json.dump(metadata, file)
 
-        result = subprocess.run(
-            ["streamlink", "-o", "stream.ts", stream_source_url, quality],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
+        result = subprocess.run(["streamlink", "-o", "stream.ts", stream_source_url, quality],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         return result.returncode == 0
 
     elif upload_service == "rclone":
