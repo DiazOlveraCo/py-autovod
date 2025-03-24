@@ -1,12 +1,15 @@
-import os
-import sys
-import time
-import json
-import subprocess
-import argparse
+import argparse, subprocess, json, time, sys, os
 import requests
-import loguru 
+from loguru import logger
 from datetime import datetime
+
+# Configure logger to include timestamp in the same format as before
+logger.remove()
+logger.add(
+    sys.stderr,
+    format="<green>[{time:HH:mm:ss}]</green> <level>{message}</level>",
+    colorize=True
+)
 
 def get_current_time():
     return datetime.now().strftime("%H:%M:%S")
@@ -20,7 +23,7 @@ def is_docker():
 def load_config(streamer_name):
     config_file = f"{streamer_name}.config"
     if not os.path.isfile(config_file):
-        print(f"[{get_current_time()}] Config file is missing")
+        logger.error("Config file is missing")
         sys.exit(1)
 
     with open(config_file, "r") as file:
@@ -60,7 +63,7 @@ def process_video(stream_source_url, upload_service, video_title, video_descript
         # streamlink 
         # ffmpeg -i input.ts -c copy output.mp4
 
-        result = subprocess.run(["streamlink", "-o","stream.ts" stream_source_url, "best"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        result = subprocess.run(["streamlink", "-o","stream.ts", stream_source_url, "best"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return result.returncode == 0
 
     elif upload_service == "rclone":
@@ -73,26 +76,26 @@ def process_video(stream_source_url, upload_service, video_title, video_descript
     return False
 
 def main():
-    print(f"[{get_current_time()}] Starting AutoVOD")
+    logger.info("Starting AutoVOD")
     
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--name", required=not is_docker(), help="Streamer name")
     args = parser.parse_args()
     
     streamer_name = args.name
-    print(f"[{get_current_time()}] Selected streamer: {streamer_name}")
+    logger.info(f"Selected streamer: {streamer_name}")
 
-    config_content = load_config(streamer_name)
+    # config_content = load_config(streamer_name)
     stream_source = "twitch"  # Extract this from the config content dynamically
     stream_source_url = determine_source(stream_source, streamer_name)
 
     if not stream_source_url:
-        print(f"[{get_current_time()}] Unknown stream source: {stream_source}")
+        logger.error(f"Unknown stream source: {stream_source}")
         sys.exit(1)
 
     while True:
         if check_stream_live(stream_source_url):
-            print(f"[{get_current_time()}] Stream is live")
+            logger.info("Stream is live")
             video_title, video_description = None, None #fetch_metadata("https://twitch.tv/", streamer_name)
 
             if not video_title:
@@ -103,12 +106,12 @@ def main():
             upload_success = process_video(stream_source_url, "rclone", video_title, video_description, "Gaming")
 
             if upload_success:
-                print(f"[{get_current_time()}] Stream uploaded successfully")
+                logger.success("Stream uploaded successfully")
             else:
-                print(f"[{get_current_time()}] Stream upload failed")
+                logger.error("Stream upload failed")
 
         else:
-            print(f"[{get_current_time()}] Stream is offline. Retrying in 60 seconds...")
+            logger.info("Stream is offline. Retrying in 60 seconds...")
 
         time.sleep(10)
 
