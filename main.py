@@ -9,12 +9,17 @@ import configparser
 from loguru import logger
 from datetime import datetime
 from typing import List, Optional
+from settings import RETRY_DELAY
 
 def run_command(cmd: List[str], stdout: Optional[int] = subprocess.DEVNULL, stderr: Optional[int] = subprocess.DEVNULL) -> subprocess.CompletedProcess:
     print(f"Executing: {' '.join(cmd)}")
-    return subprocess.run(cmd, stdout=stdout, stderr=stderr)
+    try:
+        return subprocess.run(cmd, stdout=stdout, stderr=stderr) 
+    except subprocess.CalledProcessError as e:
+        print("Command failed with error:", e)
+        return -1
 
-# Configure logger to include timestamp in the same format as before
+# Configure logger to include timestamp 
 logger.remove()
 logger.add(
     sys.stderr,
@@ -54,6 +59,7 @@ def check_stream_live(url):
     result = run_command(["streamlink", url])
     return result.returncode == 0
 
+# TODO fix this function
 def fetch_metadata(api_url, streamer_name):
     if not api_url:
         return None, None
@@ -82,11 +88,13 @@ def process_video(stream_source_url, config, streamer_name, video_title, video_d
                 streamer_name=streamer_name
             )]
         }
+
+        # TODO make this work on windows
         with open(f"/tmp/input.json", "w") as file:
             json.dump(metadata, file)
 
         result = run_command(["streamlink", "-o", "stream.ts", stream_source_url, quality])
-        return result.returncode == 0
+        return result.returncode == 0 
 
     elif upload_service == "rclone":
         remote = config['rclone']['remote']
@@ -182,7 +190,7 @@ def process_video(stream_source_url, config, streamer_name, video_title, video_d
     return False
 
 def main():
-    logger.info("Starting AutoVOD")
+    logger.info("Starting AutoVOD v1.0.0")
     
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--name", required=not is_docker(), help="Streamer name")
@@ -226,9 +234,9 @@ def main():
                 logger.error("Stream upload failed")
 
         else:
-            logger.info("Stream is offline. Retrying in 60 seconds...")
+            logger.info(f"Stream is offline. Retrying in {RETRY_DELAY} seconds...")
 
-        time.sleep(60)
+        time.sleep(RETRY_DELAY)
 
 if __name__ == "__main__":
     main()
