@@ -80,119 +80,120 @@ def process_video(stream_source_url, config, streamer_name, video_title, video_d
     upload_service = config['upload']['service'].lower()
     quality = config['streamlink']['quality']
     date_str = datetime.now().strftime("%d-%m-%Y")
+
+
+    result = run_command(["streamlink", "-o", "recordings/{author}/{id}-{time:%Y%m%d%H%M%S}.ts", stream_source_url, quality, "--twitch-disable-ads"], stdout=sys.stdout)
+    return result.returncode == 0 
     
-    if upload_service == "youtube":
-        metadata = {
-            "title": video_title or config['youtube']['title'].format(
-                streamer_name=streamer_name,
-                date=date_str
-            ),
-            "privacyStatus": config['youtube']['visibility'],
-            "description": video_description or config['youtube']['description'],
-            "playlistTitles": [config['youtube']['playlist'].format(
-                streamer_name=streamer_name
-            )]
-        }
+    # if upload_service == "youtube":
+    #     metadata = {
+    #         "title": video_title or config['youtube']['title'].format(
+    #             streamer_name=streamer_name,
+    #             date=date_str
+    #         ),
+    #         "privacyStatus": config['youtube']['visibility'],
+    #         "description": video_description or config['youtube']['description'],
+    #         "playlistTitles": [config['youtube']['playlist'].format(
+    #             streamer_name=streamer_name
+    #         )]
+    #     }
 
-        # TODO make this work on windows
-        with open(f"/tmp/input.json", "w") as file:
-            json.dump(metadata, file)
+    #     # TODO make this work on windows
+    #     with open(f"/tmp/input.json", "w") as file:
+    #         json.dump(metadata, file)
 
-        result = run_command(["streamlink", "-o", "recordings/{author}/{id}-{time:%Y%m%d%H%M%S}.ts", stream_source_url, quality, "--twitch-disable-ads"], stdout=sys.stdout)
-        return result.returncode == 0 
-
-    elif upload_service == "rclone":
-        remote = config['rclone']['remote']
-        if not remote:
-            logger.error("Rclone remote not configured")
-            return False
+    # elif upload_service == "rclone":
+    #     remote = config['rclone']['remote']
+    #     if not remote:
+    #         logger.error("Rclone remote not configured")
+    #         return False
             
-        filename = config['rclone']['filename'].format(
-            streamer_name=streamer_name,
-            date=date_str
-        )
-        fileext = config['rclone']['fileext']
-        temp_file = f"{filename}.{fileext}"
+    #     filename = config['rclone']['filename'].format(
+    #         streamer_name=streamer_name,
+    #         date=date_str
+    #     )
+    #     fileext = config['rclone']['fileext']
+    #     temp_file = f"{filename}.{fileext}"
         
-        result = run_command(["streamlink", stream_source_url, "-o", temp_file, quality])
+    #     result = run_command(["streamlink", stream_source_url, "-o", temp_file, quality])
         
-        if result.returncode == 0 and config.getboolean('encoding', 're_encode'):
-            logger.info("Re-encoding video...")
-            codec = config['encoding']['codec']
-            crf = config['encoding']['crf']
-            preset = config['encoding']['preset']
+    #     if result.returncode == 0 and config.getboolean('encoding', 're_encode'):
+    #         logger.info("Re-encoding video...")
+    #         codec = config['encoding']['codec']
+    #         crf = config['encoding']['crf']
+    #         preset = config['encoding']['preset']
             
-            encoded_file = f"encoded_{temp_file}"
-            result = run_command([
-                "ffmpeg", "-i", temp_file,
-                "-c:v", codec,
-                "-crf", crf,
-                "-preset", preset,
-                encoded_file
-            ])
+    #         encoded_file = f"encoded_{temp_file}"
+    #         result = run_command([
+    #             "ffmpeg", "-i", temp_file,
+    #             "-c:v", codec,
+    #             "-crf", crf,
+    #             "-preset", preset,
+    #             encoded_file
+    #         ])
             
-            if result.returncode == 0:
-                os.remove(temp_file)
-                temp_file = encoded_file
-            else:
-                logger.error("Re-encoding failed")
-                if not config.getboolean('upload', 'save_on_fail'):
-                    os.remove(temp_file)
-                return False
+    #         if result.returncode == 0:
+    #             os.remove(temp_file)
+    #             temp_file = encoded_file
+    #         else:
+    #             logger.error("Re-encoding failed")
+    #             if not config.getboolean('upload', 'save_on_fail'):
+    #                 os.remove(temp_file)
+    #             return False
         
-        if result.returncode == 0:
-            remote_path = config['rclone']['directory'].strip('/')
-            if remote_path:
-                remote_path = f"{remote_path}/{temp_file}"
-            else:
-                remote_path = temp_file
+    #     if result.returncode == 0:
+    #         remote_path = config['rclone']['directory'].strip('/')
+    #         if remote_path:
+    #             remote_path = f"{remote_path}/{temp_file}"
+    #         else:
+    #             remote_path = temp_file
                 
-            result = run_command(["rclone", "copyto", temp_file, f"{remote}:{remote_path}"])
+    #         result = run_command(["rclone", "copyto", temp_file, f"{remote}:{remote_path}"])
             
-            if not config.getboolean('upload', 'save_on_fail'):
-                os.remove(temp_file)
+    #         if not config.getboolean('upload', 'save_on_fail'):
+    #             os.remove(temp_file)
                 
-            return result.returncode == 0
+    #         return result.returncode == 0
             
-        return False
+    #     return False
 
-    elif upload_service == "local":
-        filename = config['local']['filename'].format(
-            streamer_name=streamer_name,
-            date=date_str
-        )
-        fileext = config['local']['extension']
-        output_file = f"{filename}.{fileext}"
+    # elif upload_service == "local":
+    #     filename = config['local']['filename'].format(
+    #         streamer_name=streamer_name,
+    #         date=date_str
+    #     )
+    #     fileext = config['local']['extension']
+    #     output_file = f"{filename}.{fileext}"
         
-        result = run_command(["streamlink", stream_source_url, "-o", output_file, quality])
+    #     result = run_command(["streamlink", stream_source_url, "-o", output_file, quality])
         
-        if result.returncode == 0 and config.getboolean('encoding', 're_encode'):
-            logger.info("Re-encoding video...")
-            codec = config['encoding']['codec']
-            crf = config['encoding']['crf']
-            preset = config['encoding']['preset']
+    #     if result.returncode == 0 and config.getboolean('encoding', 're_encode'):
+    #         logger.info("Re-encoding video...")
+    #         codec = config['encoding']['codec']
+    #         crf = config['encoding']['crf']
+    #         preset = config['encoding']['preset']
             
-            encoded_file = f"encoded_{output_file}"
-            result = run_command([
-                "ffmpeg", "-i", output_file,
-                "-c:v", codec,
-                "-crf", crf,
-                "-preset", preset,
-                encoded_file
-            ])
+    #         encoded_file = f"encoded_{output_file}"
+    #         result = run_command([
+    #             "ffmpeg", "-i", output_file,
+    #             "-c:v", codec,
+    #             "-crf", crf,
+    #             "-preset", preset,
+    #             encoded_file
+    #         ])
             
-            if result.returncode == 0:
-                os.remove(output_file)
-                os.rename(encoded_file, output_file)
-            else:
-                logger.error("Re-encoding failed")
-                if not config.getboolean('upload', 'save_on_fail'):
-                    os.remove(output_file)
-                return False
+    #         if result.returncode == 0:
+    #             os.remove(output_file)
+    #             os.rename(encoded_file, output_file)
+    #         else:
+    #             logger.error("Re-encoding failed")
+    #             if not config.getboolean('upload', 'save_on_fail'):
+    #                 os.remove(output_file)
+    #             return False
                 
-        return result.returncode == 0
+    #     return result.returncode == 0
 
-    return False
+    # return False
 
 def main():
     logger.info("Starting AutoVOD v1.0.0")
@@ -210,7 +211,7 @@ def main():
 
     if not stream_source_url:
         logger.error(f"Unknown stream source: {stream_source}")
-        sys.exit(1)
+        exit(1)
 
     while True:
         if check_stream_live(stream_source_url):
