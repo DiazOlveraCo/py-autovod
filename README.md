@@ -1,8 +1,4 @@
-# Py-AutoVOD
-
-<p align="center">
-
-</p>
+# AutoVOD.py
 
 A Python implementation of [autovod](https://github.com/jenslys/AutoVOD) with some extra features.
 
@@ -18,4 +14,9 @@ A Python implementation of [autovod](https://github.com/jenslys/AutoVOD) with so
 Manually install ffmpeg, streamlink, jq, pm2, YoutubeDownloader. Alternatively, you can do the installation automatically with `install.sh`
 
 ## Setup
+
+## Contribution
+
+## Disclaimer
+
 
