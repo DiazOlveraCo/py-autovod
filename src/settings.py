@@ -1,4 +1,1 @@
-
-
-
-RETRY_DELAY = 60 # secs
+RETRY_DELAY = 60  # secs
