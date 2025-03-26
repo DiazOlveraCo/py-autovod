@@ -9,12 +9,14 @@
   <a href="https://codecov.io/github/streamlink/streamlink?branch=master"><img alt="Overall code coverage" src="https://img.shields.io/codecov/c/github/streamlink/streamlink.svg?branch=master&style=flat-square&maxAge=86400"></a>
 </p>
 
-This is a Python implementation of [autovod](https://github.com/jenslys/AutoVOD) with some extra features.
+A Python implementation of [autovod](https://github.com/jenslys/AutoVOD) with some extra features.
 
 ## Features
-- ( :heavy_check_mark: ) Automatically download livestreams from multiple streamers at once.
-- ( :x: ) Automatically upload to RClone, YouTube, and more.
-- ( :x: ) Smart AI video clipping.
+- ( :heavy_check_mark: ) Auto download livestreams (Twitch.tv, Kick.tv, Youtube) from multiple streamers concurrently
+- ( :x: ) Auto upload to RClone, YouTube, and more
+- ( :x: ) Smart AI video clipping
+- ( :x: ) Archive both video and chat logs
+-  ( :x: ) Platform independent and Docker supported
 
 ## Installation
 
