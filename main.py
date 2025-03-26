@@ -8,6 +8,11 @@ import requests
 import configparser
 from loguru import logger
 from datetime import datetime
+from typing import List, Optional
+
+def run_command(cmd: List[str], stdout: Optional[int] = subprocess.DEVNULL, stderr: Optional[int] = subprocess.DEVNULL) -> subprocess.CompletedProcess:
+    print(f"Executing: {' '.join(cmd)}")
+    return subprocess.run(cmd, stdout=stdout, stderr=stderr)
 
 # Configure logger to include timestamp in the same format as before
 logger.remove()
@@ -46,7 +51,7 @@ def determine_source(stream_source, streamer_name):
     return sources.get(stream_source.lower(), None)
 
 def check_stream_live(url):
-    result = subprocess.run(["streamlink", url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    result = run_command(["streamlink", url])
     return result.returncode == 0
 
 def fetch_metadata(api_url, streamer_name):
@@ -80,7 +85,7 @@ def process_video(stream_source_url, config, streamer_name, video_title, video_d
         with open(f"/tmp/input.json", "w") as file:
             json.dump(metadata, file)
 
-        result = subprocess.run(["streamlink", "-o", "stream.ts", stream_source_url, quality],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        result = run_command(["streamlink", "-o", "stream.ts", stream_source_url, quality])
         return result.returncode == 0
 
     elif upload_service == "rclone":
@@ -96,11 +101,7 @@ def process_video(stream_source_url, config, streamer_name, video_title, video_d
         fileext = config['rclone']['fileext']
         temp_file = f"{filename}.{fileext}"
         
-        result = subprocess.run(
-            ["streamlink", stream_source_url, "-o", temp_file, quality],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
+        result = run_command(["streamlink", stream_source_url, "-o", temp_file, quality])
         
         if result.returncode == 0 and config.getboolean('encoding', 're_encode'):
             logger.info("Re-encoding video...")
@@ -109,13 +110,13 @@ def process_video(stream_source_url, config, streamer_name, video_title, video_d
             preset = config['encoding']['preset']
             
             encoded_file = f"encoded_{temp_file}"
-            result = subprocess.run([
+            result = run_command([
                 "ffmpeg", "-i", temp_file,
                 "-c:v", codec,
                 "-crf", crf,
                 "-preset", preset,
                 encoded_file
-            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            ])
             
             if result.returncode == 0:
                 os.remove(temp_file)
@@ -133,11 +134,7 @@ def process_video(stream_source_url, config, streamer_name, video_title, video_d
             else:
                 remote_path = temp_file
                 
-            result = subprocess.run(
-                ["rclone", "copyto", temp_file, f"{remote}:{remote_path}"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
+            result = run_command(["rclone", "copyto", temp_file, f"{remote}:{remote_path}"])
             
             if not config.getboolean('upload', 'save_on_fail'):
                 os.remove(temp_file)
@@ -154,11 +151,7 @@ def process_video(stream_source_url, config, streamer_name, video_title, video_d
         fileext = config['local']['extension']
         output_file = f"{filename}.{fileext}"
         
-        result = subprocess.run(
-            ["streamlink", stream_source_url, "-o", output_file, quality],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
+        result = run_command(["streamlink", stream_source_url, "-o", output_file, quality])
         
         if result.returncode == 0 and config.getboolean('encoding', 're_encode'):
             logger.info("Re-encoding video...")
@@ -167,13 +160,13 @@ def process_video(stream_source_url, config, streamer_name, video_title, video_d
             preset = config['encoding']['preset']
             
             encoded_file = f"encoded_{output_file}"
-            result = subprocess.run([
+            result = run_command([
                 "ffmpeg", "-i", output_file,
                 "-c:v", codec,
                 "-crf", crf,
                 "-preset", preset,
                 encoded_file
-            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            ])
             
             if result.returncode == 0:
                 os.remove(output_file)
@@ -235,7 +228,7 @@ def main():
         else:
             logger.info("Stream is offline. Retrying in 60 seconds...")
 
-        time.sleep(10)
+        time.sleep(60)
 
 if __name__ == "__main__":
     main()
