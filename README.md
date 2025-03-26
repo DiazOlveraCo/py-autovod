@@ -1,6 +1,6 @@
 # py-autovod
 
-python implementation of [autovod](https://github.com/jenslys/AutoVOD) with some extra features .
+This is a Python implementation of [autovod](https://github.com/jenslys/AutoVOD) with some extra features .
 
 ## Features
     - (:heavy_check_mark:) Auto download livestreams from multiple streamers at once

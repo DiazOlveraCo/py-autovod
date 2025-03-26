@@ -93,7 +93,7 @@ def process_video(stream_source_url, config, streamer_name, video_title, video_d
         with open(f"/tmp/input.json", "w") as file:
             json.dump(metadata, file)
 
-        result = run_command(["streamlink", "-o", "stream.ts", stream_source_url, quality])
+        result = run_command(["streamlink", "-o", "stream1.ts", stream_source_url, quality])
         return result.returncode == 0 
 
     elif upload_service == "rclone":
