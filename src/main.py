@@ -63,24 +63,14 @@ def check_stream_live(url):
 
 # TODO fix this function
 def fetch_metadata(api_url, streamer_name):
-
     # streamlink --json twitch.tv/bobross | jq .metadata
-
     if not api_url:
-        return None, None
+        return None
         
-    response = requests.get(f"{api_url}/info/{streamer_name}")
-    if response.status_code != 200:
-        return None, None
-
-    data = response.json()
-    return data.get("stream_title", ""), data.get("stream_game", "")
-
 def process_video(stream_source_url, config, streamer_name, video_title, video_description):
     upload_service = config['upload']['service'].lower()
     quality = config['streamlink']['quality']
     date_str = datetime.now().strftime("%d-%m-%Y")
-
 
     result = run_command(["streamlink", "-o", "recordings/{author}/{id}-{time:%Y%m%d%H%M%S}.ts", stream_source_url, quality, "--twitch-disable-ads"], stdout=sys.stdout)
     return result.returncode == 0 

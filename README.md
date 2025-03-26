@@ -3,7 +3,7 @@
 A Python implementation of [autovod](https://github.com/jenslys/AutoVOD) with some extra features.
 
 ## Features
-- ( :heavy_check_mark: ) Auto download livestreams (Twitch.tv, Kick.tv, Youtube) from multiple streamers concurrently
+- ( :heavy_check_mark: ) Auto download livestreams (Twitch.tv, Kick.tv, Youtube Live) from multiple streamers concurrently
 - ( :x: ) Auto upload to RClone, YouTube, and more
 - ( :x: ) Smart AI video clipping
 - ( :x: ) Archive both video and chat logs
@@ -11,7 +11,7 @@ A Python implementation of [autovod](https://github.com/jenslys/AutoVOD) with so
 
 ## Installation
 
-Manually install ffmpeg, streamlink, jq, pm2, YoutubeDownloader. Alternatively, you can do the installation automatically with `install.sh`
+Manually install ffmpeg, streamlink, jq, pm2, YoutubeUploader. Alternatively, you can do the installation automatically with `install.sh`
 
 ## Setup
 
