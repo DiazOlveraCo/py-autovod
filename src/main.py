@@ -55,12 +55,17 @@ def determine_source(stream_source, streamer_name):
     }
     return sources.get(stream_source.lower(), None)
 
+
 def check_stream_live(url):
+    # TODO this takes many seconds, find a faster method
     result = run_command(["streamlink", url])
     return result.returncode == 0
 
 # TODO fix this function
 def fetch_metadata(api_url, streamer_name):
+
+    # streamlink --json twitch.tv/bobross | jq .metadata
+
     if not api_url:
         return None, None
         
@@ -93,7 +98,7 @@ def process_video(stream_source_url, config, streamer_name, video_title, video_d
         with open(f"/tmp/input.json", "w") as file:
             json.dump(metadata, file)
 
-        result = run_command(["streamlink", "-o", "stream1.ts", stream_source_url, quality])
+        result = run_command(["streamlink", "-o", "recordings/{author}/{id}-{time:%Y%m%d%H%M%S}.ts", stream_source_url, quality, "--twitch-disable-ads"], stdout=sys.stdout)
         return result.returncode == 0 
 
     elif upload_service == "rclone":
