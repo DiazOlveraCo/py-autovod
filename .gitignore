@@ -69,6 +69,8 @@ lib64
 !config.ini
 !default.ini
 
+# Vosk models
+models/
 
 
 

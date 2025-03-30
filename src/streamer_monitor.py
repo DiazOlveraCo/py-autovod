@@ -1,6 +1,7 @@
 import sys
 import time
 import threading
+import os
 from datetime import datetime
 from loguru import logger
 
@@ -11,6 +12,8 @@ from utils import (
     fetch_metadata,
     load_config,
 )
+from transcription import process_ts_file
+import settings
 
 class StreamerMonitor(threading.Thread):
     """Class to monitor and download streams for a single streamer."""
@@ -78,7 +81,41 @@ class StreamerMonitor(threading.Thread):
         )
         
         # streamlink returns when stream ends
-        return result.returncode == 0
+        success = result.returncode == 0
+        
+        # If download was successful and transcription is enabled, process the video for transcription
+        if success and settings.config.getboolean("transcription", "enabled", fallback=False):
+            # Find the most recently downloaded file
+            streamer_dir = f"recordings/{self.streamer_name}"
+            if os.path.exists(streamer_dir):
+                files = [os.path.join(streamer_dir, f) for f in os.listdir(streamer_dir) if f.endswith(".ts")]
+                if files:
+                    # Sort by modification time, newest first
+                    latest_file = max(files, key=os.path.getmtime)
+                    logger.info(f"Found latest recording: {latest_file}")
+                    
+                    # Get model path from config
+                    model_path = settings.config.get("transcription", "model_path")
+                    cleanup_wav = settings.config.getboolean("transcription", "cleanup_wav", fallback=True)
+                    
+                    # Process the file for transcription
+                    try:
+                        transcription_success, transcript_path = process_ts_file(
+                            latest_file, 
+                            model_path,
+                            cleanup_wav
+                        )
+                        
+                        if transcription_success:
+                            logger.success(f"Transcription saved to {transcript_path}")
+                        else:
+                            logger.error("Transcription failed")
+                    except Exception as e:
+                        logger.error(f"Error during transcription: {e}")
+                else:
+                    logger.warning(f"No .ts files found in {streamer_dir}")
+        
+        return success
     
     def run(self):
         """Main monitoring loop."""
