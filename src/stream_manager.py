@@ -60,6 +60,7 @@ class StreamManager:
             self.monitors[streamer_name] = monitor
             monitor.daemon = True  # Set as daemon so they exit when main thread exits
             monitor.start()
+            time.sleep(1)
 
         self.running = True
         logger.success("Stream manager started successfully")
