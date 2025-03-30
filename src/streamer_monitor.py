@@ -2,7 +2,6 @@ import sys
 import time
 import threading
 import os
-from datetime import datetime
 from loguru import logger
 from utils import (
     run_command,
@@ -55,9 +54,7 @@ class StreamerMonitor(threading.Thread):
             return False
 
         quality = self.config["streamlink"]["quality"]
-        date_str = datetime.now().strftime("%d-%m-%Y")
 
-        # Build command with flags from config
         command = [
             "streamlink",
             "-o",
@@ -67,15 +64,11 @@ class StreamerMonitor(threading.Thread):
         ]
 
         if self.config.has_option("streamlink", "flags"):
-            flags = self.config.get("streamlink", "flags").split(",")
+            flags = self.config.get("streamlink", "flags").strip(",").split(",")
             flags = [flag.strip() for flag in flags if flag.strip()]
             command.extend(flags)
 
-        result = run_command(
-            command,
-            stdout=sys.stdout,
-            stderr=sys.stdout,
-        )
+        result = run_command(command, stdout=sys.stdout,)
 
         # streamlink returns when stream ends
         success = result.returncode == 0
@@ -122,9 +115,7 @@ class StreamerMonitor(threading.Thread):
 
     def run(self):
         if not self.config or not self.stream_source_url:
-            logger.error(
-                f"Cannot start monitoring for {self.streamer_name}: missing configuration"
-            )
+            logger.error(f"Cannot start monitoring for {self.streamer_name}: missing configuration")
             return
 
         self.running = True
