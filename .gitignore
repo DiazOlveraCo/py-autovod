@@ -58,16 +58,17 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
 /bin 
 /include 
 /lib 
+pyvenv.cfg 
+lib64
 
+# Ini files
 *.ini
 !config.ini
 !default.ini
 
-pyvenv.cfg 
-lib64
+
 
 
