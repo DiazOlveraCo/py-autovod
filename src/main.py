@@ -47,7 +47,7 @@ def main():
         return
 
     # Create the stream manager
-    manager = StreamManager(settings.config)
+    manager = StreamManager()
     
     # start the manager and wait
     manager.start()

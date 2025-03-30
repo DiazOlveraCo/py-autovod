@@ -4,7 +4,6 @@ import threading
 import os
 from datetime import datetime
 from loguru import logger
-
 from utils import (
     run_command,
     determine_source,
@@ -26,7 +25,7 @@ class StreamerMonitor(threading.Thread):
             streamer_name: The name of the streamer to monitor
             retry_delay: Time in seconds to wait between checks if stream is offline
         """
-        super().__init__(name=f"Monitor-{streamer_name}")
+        super().__init__(name=f"m-{streamer_name}")
         self.streamer_name = streamer_name
         self.retry_delay = retry_delay
         self.running = False
@@ -40,13 +39,12 @@ class StreamerMonitor(threading.Thread):
         self.config = load_config(self.streamer_name)
         if not self.config:
             self.config = load_config("default")
+
         stream_source = self.config["source"]["stream_source"]
         self.stream_source_url = determine_source(stream_source, self.streamer_name)
 
         if not self.stream_source_url:
-            logger.error(
-                f"Unknown stream source: {stream_source} for {self.streamer_name}"
-            )
+            logger.error(f"Unknown stream source: {stream_source} for {self.streamer_name}")
             return False
 
         return True
@@ -63,7 +61,7 @@ class StreamerMonitor(threading.Thread):
         command = [
             "streamlink",
             "-o",
-            f"recordings/{self.streamer_name}/{{author}}-{{id}}-{{time:%Y%m%d%H%M%S}}.ts",
+            f"recordings/{{author}}/{{id}}/{{author}}-{{time:%Y-%m-%d-%H-%M-%S}}.ts",
             self.stream_source_url,
             quality,
         ]
@@ -83,9 +81,7 @@ class StreamerMonitor(threading.Thread):
         success = result.returncode == 0
 
         # If download was successful and transcription is enabled, process the video for transcription
-        if success and settings.config.getboolean(
-            "transcription", "enabled", fallback=False
-        ):
+        if success and settings.config.getboolean("transcription", "enabled", fallback=False):
             # Find the most recently downloaded file
             streamer_dir = f"recordings/{self.streamer_name}"
             if os.path.exists(streamer_dir):
@@ -98,17 +94,14 @@ class StreamerMonitor(threading.Thread):
                     # Sort by modification time, newest first
                     latest_file = max(files, key=os.path.getmtime)
                     logger.info(f"Found latest recording: {latest_file}")
-                    mp4file = str(self.streamer_name + "-" + date_str + ".mp4")
 
                     run_command(
-                        ["ffmpeg", "-i", latest_file, "-c", "copy", mp4file],
+                        ["ffmpeg", "-i", latest_file, "-c", "copy", latest_file.replace(".ts",".mp4")],
                         stdout=sys.stdout,
                     )
 
                     model_name = settings.config.get("transcription", "model_name")
-                    cleanup_wav = settings.config.getboolean(
-                        "transcription", "cleanup_wav", fallback=True
-                    )
+                    cleanup_wav = settings.config.getboolean("transcription", "cleanup_wav", fallback=True)
 
                     # Process the file for transcription
                     try:
@@ -146,25 +139,17 @@ class StreamerMonitor(threading.Thread):
                     video_description = None
 
                     if self.config.getboolean("source", "api_calls", fallback=False):
-                        video_title, video_description = fetch_metadata(
-                            self.config["source"]["api_url"], self.streamer_name
-                        )
+                        video_title, video_description = fetch_metadata(self.config["source"]["api_url"], self.streamer_name)
 
-                    download_success = self.process_video(
-                        video_title, video_description
-                    )
+                    download_success = self.process_video(video_title, video_description)
 
                     if download_success:
-                        logger.success(
-                            f"Stream for {self.streamer_name} downloaded successfully"
-                        )
+                        logger.success(f"Stream for {self.streamer_name} downloaded successfully")
                     else:
                         logger.error(f"Stream download failed for {self.streamer_name}")
 
                 else:
-                    logger.info(
-                        f"{self.streamer_name} is offline. Retrying in {self.retry_delay} seconds..."
-                    )
+                    logger.info(f"{self.streamer_name} is offline. Retrying in {self.retry_delay} seconds...")
 
             except Exception as e:
                 logger.error(f"Error monitoring {self.streamer_name}: {e}")
