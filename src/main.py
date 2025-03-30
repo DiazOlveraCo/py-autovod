@@ -4,7 +4,7 @@ import os
 import sys
 import argparse
 from loguru import logger
-from utils import (is_docker, load_main_config)
+from utils import (is_docker, load_config)
 import settings
 from stream_manager import StreamManager
 from streamer_monitor import StreamerMonitor
