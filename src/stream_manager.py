@@ -3,19 +3,21 @@ import time
 import signal
 from typing import Dict, List
 from loguru import logger
-
+import settings
 from streamer_monitor import StreamerMonitor
 
 
 class StreamManager:
     """Class to manage multiple streamer monitors."""
 
-    def __init__(self, main_config):
+    def __init__(self):
         """Initialize the stream manager."""
         self.monitors: Dict[str, StreamerMonitor] = {}
         self.running = False
-        self.config = main_config
-        self.retry_delay = 60
+        self.retry_delay = 120
+
+        if settings.config.has_option("general","retry_delay"):
+            self.retry_delay = settings.config.getint("general","retry_delay")
 
         # Set up signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -28,15 +30,15 @@ class StreamManager:
 
     def get_streamers_list(self) -> List[str]:
         """Get the list of streamers to monitor from the configuration."""
-        if not self.config:
+        if not settings.config:
             return []
 
-        if not self.config.has_option("streamers", "streamers"):
+        if not settings.config.has_option("streamers", "streamers"):
             logger.error("No streamers defined in configuration")
             return []
 
-        streamers_str = self.config.get("streamers", "streamers")
-        return [s.strip() for s in streamers_str.split(",") if s.strip()]
+        streamers_str = settings.config.get("streamers", "streamers")
+        return set([s.strip() for s in streamers_str.strip(",").split(",") if s.strip()])
 
     def start(self):
         if self.running:
@@ -58,6 +60,7 @@ class StreamManager:
             self.monitors[streamer_name] = monitor
             monitor.daemon = True  # Set as daemon so they exit when main thread exits
             monitor.start()
+            time.sleep(1)
 
         self.running = True
         logger.success("Stream manager started successfully")
@@ -70,13 +73,11 @@ class StreamManager:
 
         # Stop all monitors
         for streamer_name, monitor in self.monitors.items():
-            logger.info(f"Stopping monitor for {streamer_name}")
             monitor.stop()
-            monitor.join(timeout=1)
+            monitor.join(timeout=0.1)
 
         self.monitors.clear()
         self.running = False
-        logger.info("All streamer monitors stopped")
 
     def list_monitored_streamers(self) -> List[str]:
         return list(self.monitors.keys())
