@@ -68,7 +68,6 @@ class StreamerMonitor(threading.Thread):
             quality,
         ]
         
-        # Add flags from config if available
         if self.config.has_option("streamlink", "flags"):
             flags = self.config.get("streamlink", "flags").split(",")
             flags = [flag.strip() for flag in flags if flag.strip()]
@@ -93,6 +92,9 @@ class StreamerMonitor(threading.Thread):
                     # Sort by modification time, newest first
                     latest_file = max(files, key=os.path.getmtime)
                     logger.info(f"Found latest recording: {latest_file}")
+                    mp4file = str(self.streamer_name+"-"+ date_str+".mp4")
+
+                    run_command(["ffmpeg", "-i",latest_file,"-c","copy", mp4file],stdout=sys.stdout)
                     
                     model_name = settings.config.get("transcription", "model_name")
                     cleanup_wav = settings.config.getboolean("transcription", "cleanup_wav", fallback=True)

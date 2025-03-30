@@ -43,15 +43,6 @@ def main():
     # Create the stream manager
     manager = StreamManager(settings.config)
     
-    # Handle command line arguments
-    if args.list:
-        streamers = manager.list_monitored_streamers()
-        if streamers:
-            logger.info(f"Currently monitoring {len(streamers)} streamers: {', '.join(streamers)}")
-        else:
-            logger.info("No streamers are currently being monitored")
-        return
-    
     # Normal operation - start the manager and wait
     manager.start()
     manager.wait_for_completion()
