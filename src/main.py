@@ -4,7 +4,8 @@ import os
 import sys
 import argparse
 from loguru import logger
-from utils import (is_docker, get_version)
+from utils import (is_docker, load_main_config)
+import settings
 from stream_manager import StreamManager
 from streamer_monitor import StreamerMonitor
 
@@ -16,8 +17,12 @@ logger.add(
     colorize=True,
 )
 
+settings.init()
+
 def main():
-    logger.info(f"Starting AutoVOD v{get_version()}")
+    version = settings.config.get("general", "version")
+
+    logger.info(f"Starting AutoVOD v{version}")
     
     parser = argparse.ArgumentParser(description="AutoVOD - Automatic VOD downloader for Twitch, Kick, and YouTube")
     parser.add_argument("-n", "--name", help="Single streamer name to monitor")
@@ -32,18 +37,18 @@ def main():
     
     # Display version and exit
     if args.version:
-        print(f"AutoVOD v{get_version()}")
+        print(f"AutoVOD v{version}")
         return
         
     # Single streamer mode
     if args.name:
         logger.info(f"Running for a single streamer: {args.name}")
-        monitor = StreamerMonitor(args.name)
+        monitor = StreamerMonitor(args.name, settings.config.get("general","retry_delay"))
         monitor.run()
         return
     
     # Create the stream manager
-    manager = StreamManager()
+    manager = StreamManager(settings.config)
     
     # Handle command line arguments
     if args.add:

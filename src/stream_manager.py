@@ -4,17 +4,16 @@ import signal
 from typing import Dict, List
 from loguru import logger
 
-from utils import load_main_config
 from streamer_monitor import StreamerMonitor
 
 class StreamManager:
     """Class to manage multiple streamer monitors."""
     
-    def __init__(self):
+    def __init__(self, main_config):
         """Initialize the stream manager."""
         self.monitors: Dict[str, StreamerMonitor] = {}
         self.running = False
-        self.config = None
+        self.config = main_config
         self.retry_delay = 60
         
         # Set up signal handlers for graceful shutdown
@@ -25,19 +24,6 @@ class StreamManager:
         logger.info(f"Received signal {signum}, shutting down...")
         self.stop()
         sys.exit(0)
-    
-    def load_configuration(self) -> bool:
-        """Load the main configuration file."""
-        self.config = load_main_config()
-        if not self.config:
-            logger.error("Failed to load main configuration")
-            return False
-        
-        # Get the retry delay from config if available
-        if self.config.has_option("general", "retry_delay"):
-            self.retry_delay = self.config.getint("general", "retry_delay")
-        
-        return True
     
     def get_streamers_list(self) -> List[str]:
         """Get the list of streamers to monitor from the configuration."""
@@ -55,10 +41,6 @@ class StreamManager:
     def start(self):
         if self.running:
             logger.warning("Stream manager is already running")
-            return
-        
-        if not self.load_configuration():
-            logger.error("Cannot start stream manager: missing configuration")
             return
         
         streamers = self.get_streamers_list()

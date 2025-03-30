@@ -17,7 +17,6 @@ def run_command(
         return subprocess.CompletedProcess(cmd, -1)
 
 def is_docker() -> bool:
-    """Check if running inside a Docker container."""
     return os.path.exists("/.dockerenv")
 
 def determine_source(stream_source: str, streamer_name: str) -> str:
@@ -73,16 +72,3 @@ def load_main_config():
     config.read(config_file)
     logger.info(f"Loaded main configuration from {config_file}")
     return config
-
-def get_version():
-    """Get the current version of AutoVOD from config.ini."""
-    config = load_main_config()
-    if not config:
-        logger.error("Failed to load configuration, cannot determine version")
-        return "unknown"
-    
-    try:
-        return config.get("general", "version")
-    except (configparser.NoSectionError, configparser.NoOptionError):
-        logger.error("Version information not found in config.ini")
-        return "unknown"
