@@ -1,10 +1,6 @@
-
-
-import os
 import sys
 import time
 import signal
-import threading
 from typing import Dict, List
 from loguru import logger
 
@@ -27,7 +23,6 @@ class StreamManager:
         signal.signal(signal.SIGTERM, self._signal_handler)
     
     def _signal_handler(self, signum, frame):
-        """Handle termination signals."""
         logger.info(f"Received signal {signum}, shutting down...")
         self.stop()
         sys.exit(0)
@@ -59,7 +54,6 @@ class StreamManager:
         return [s.strip() for s in streamers_str.split(",") if s.strip()]
     
     def start(self):
-        """Start monitoring all configured streamers."""
         if self.running:
             logger.warning("Stream manager is already running")
             return
@@ -86,7 +80,6 @@ class StreamManager:
         logger.success("Stream manager started successfully")
     
     def stop(self):
-        """Stop all streamer monitors."""
         if not self.running:
             return
         
@@ -103,7 +96,6 @@ class StreamManager:
         logger.info("All streamer monitors stopped")
     
     def add_streamer(self, streamer_name: str) -> bool:
-        """Add a new streamer to monitor."""
         if streamer_name in self.monitors:
             logger.warning(f"Streamer {streamer_name} is already being monitored")
             return False
@@ -117,7 +109,6 @@ class StreamManager:
         return True
     
     def remove_streamer(self, streamer_name: str) -> bool:
-        """Remove a streamer from monitoring."""
         if streamer_name not in self.monitors:
             logger.warning(f"Streamer {streamer_name} is not being monitored")
             return False
@@ -131,11 +122,9 @@ class StreamManager:
         return True
     
     def list_monitored_streamers(self) -> List[str]:
-        """Get a list of currently monitored streamers."""
         return list(self.monitors.keys())
     
     def wait_for_completion(self):
-        """Wait for all monitors to complete (blocks indefinitely)."""
         try:
             # Keep the main thread alive
             while self.running:

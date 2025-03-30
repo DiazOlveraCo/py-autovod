@@ -1,6 +1,4 @@
-
 import os
-import sys
 import subprocess
 from typing import List, Optional, Tuple
 from loguru import logger
@@ -38,7 +36,6 @@ def check_stream_live(url: str) -> bool:
     return result.returncode == 0
 
 def fetch_metadata(api_url: str, streamer_name: str) -> Tuple[str, str]:
-    """Fetch metadata for a stream."""
     # TODO: Implement this function properly
     # streamlink --json twitch.tv/bobross | jq .metadata
     if not api_url:
@@ -77,6 +74,3 @@ def load_main_config():
     logger.info(f"Loaded main configuration from {config_file}")
     return config
 
-def ensure_directories_exist(streamer_name: str) -> None:
-    """Ensure that the necessary directories exist."""
-    os.makedirs(f"recordings/{streamer_name}", exist_ok=True)

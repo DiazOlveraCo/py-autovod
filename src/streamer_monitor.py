@@ -1,6 +1,3 @@
-
-
-import os
 import sys
 import time
 import threading
@@ -13,7 +10,6 @@ from utils import (
     check_stream_live,
     fetch_metadata,
     load_config,
-    ensure_directories_exist,
 )
 
 class StreamerMonitor(threading.Thread):
@@ -35,7 +31,6 @@ class StreamerMonitor(threading.Thread):
         
         # Initialize
         self._load_configuration()
-        ensure_directories_exist(streamer_name)
     
     def _load_configuration(self) -> bool:
         """Load the streamer-specific configuration."""
@@ -61,15 +56,24 @@ class StreamerMonitor(threading.Thread):
         quality = self.config["streamlink"]["quality"]
         date_str = datetime.now().strftime("%d-%m-%Y")
         
+        # Build command with flags from config
+        command = [
+            "streamlink",
+            "-o",
+            f"recordings/{self.streamer_name}/{{author}}-{{id}}-{{time:%Y%m%d%H%M%S}}.ts",
+            self.stream_source_url,
+            quality,
+        ]
+        
+        # Add flags from config if available
+        if self.config.has_option("streamlink", "flags"):
+            flags = self.config.get("streamlink", "flags").split(",")
+            # Strip whitespace from each flag
+            flags = [flag.strip() for flag in flags if flag.strip()]
+            command.extend(flags)
+        
         result = run_command(
-            [
-                "streamlink",
-                "-o",
-                f"recordings/{self.streamer_name}/{{author}}-{{id}}-{{time:%Y%m%d%H%M%S}}.ts",
-                self.stream_source_url,
-                quality,
-                "--twitch-disable-ads",
-            ],
+            command,
             stdout=sys.stdout,
         )
         

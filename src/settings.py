@@ -1,1 +1,2 @@
 RETRY_DELAY = 60  # secs
+VERSION = "1.1.0"
