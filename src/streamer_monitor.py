@@ -1,6 +1,7 @@
 import sys
 import time
 import threading
+import os
 from datetime import datetime
 from loguru import logger
 
@@ -11,6 +12,8 @@ from utils import (
     fetch_metadata,
     load_config,
 )
+from transcription import process_ts_file
+import settings
 
 class StreamerMonitor(threading.Thread):
     """Class to monitor and download streams for a single streamer."""
@@ -34,7 +37,7 @@ class StreamerMonitor(threading.Thread):
     
     def _load_configuration(self) -> bool:
         """Load the streamer-specific configuration."""
-        self.config = load_config(self.streamer_name)
+        self.config = load_config("default") # self.streamer_name
         if not self.config:
             logger.error(f"Failed to load configuration for {self.streamer_name}")
             return False
@@ -65,23 +68,57 @@ class StreamerMonitor(threading.Thread):
             quality,
         ]
         
-        # Add flags from config if available
         if self.config.has_option("streamlink", "flags"):
             flags = self.config.get("streamlink", "flags").split(",")
-            # Strip whitespace from each flag
             flags = [flag.strip() for flag in flags if flag.strip()]
             command.extend(flags)
         
         result = run_command(
             command,
             stdout=sys.stdout,
+            stderr=sys.stdout,
         )
         
         # streamlink returns when stream ends
-        return result.returncode == 0
+        success = result.returncode == 0
+        
+        # If download was successful and transcription is enabled, process the video for transcription
+        if success and settings.config.getboolean("transcription", "enabled", fallback=False):
+            # Find the most recently downloaded file
+            streamer_dir = f"recordings/{self.streamer_name}"
+            if os.path.exists(streamer_dir):
+                files = [os.path.join(streamer_dir, f) for f in os.listdir(streamer_dir) if f.endswith(".ts")]
+                if files:
+                    # Sort by modification time, newest first
+                    latest_file = max(files, key=os.path.getmtime)
+                    logger.info(f"Found latest recording: {latest_file}")
+                    mp4file = str(self.streamer_name+"-"+ date_str+".mp4")
+
+                    run_command(["ffmpeg", "-i",latest_file,"-c","copy", mp4file],stdout=sys.stdout)
+                    
+                    model_name = settings.config.get("transcription", "model_name")
+                    cleanup_wav = settings.config.getboolean("transcription", "cleanup_wav", fallback=True)
+                    
+                    # Process the file for transcription
+                    try:
+                        transcription_success, transcript_path = process_ts_file(
+                            latest_file, 
+                            model_name,
+                            cleanup_wav
+                        )
+                        
+                        if transcription_success:
+                            logger.success(f"Transcription saved to {transcript_path}")
+                        else:
+                            logger.error("Transcription failed")
+                    except Exception as e:
+                        logger.error(f"Error during transcription: {e}")
+                else:
+                    logger.warning(f"No .ts files found in {streamer_dir}")
+        
+        return success
     
     def run(self):
-        """Main monitoring loop."""
         if not self.config or not self.stream_source_url:
             logger.error(f"Cannot start monitoring for {self.streamer_name}: missing configuration")
             return

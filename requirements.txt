@@ -7,3 +7,4 @@ packaging==24.2
 pyproject_hooks==1.2.0
 requests==2.32.3
 urllib3==2.3.0
+vosk==0.3.45
