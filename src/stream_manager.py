@@ -1,0 +1,145 @@
+
+
+import os
+import sys
+import time
+import signal
+import threading
+from typing import Dict, List
+from loguru import logger
+
+from utils import load_main_config
+from streamer_monitor import StreamerMonitor
+from settings import RETRY_DELAY
+
+class StreamManager:
+    """Class to manage multiple streamer monitors."""
+    
+    def __init__(self):
+        """Initialize the stream manager."""
+        self.monitors: Dict[str, StreamerMonitor] = {}
+        self.running = False
+        self.config = None
+        self.retry_delay = RETRY_DELAY
+        
+        # Set up signal handlers for graceful shutdown
+        signal.signal(signal.SIGINT, self._signal_handler)
+        signal.signal(signal.SIGTERM, self._signal_handler)
+    
+    def _signal_handler(self, signum, frame):
+        """Handle termination signals."""
+        logger.info(f"Received signal {signum}, shutting down...")
+        self.stop()
+        sys.exit(0)
+    
+    def load_configuration(self) -> bool:
+        """Load the main configuration file."""
+        self.config = load_main_config()
+        if not self.config:
+            logger.error("Failed to load main configuration")
+            return False
+        
+        # Get the retry delay from config if available
+        if self.config.has_option("general", "retry_delay"):
+            self.retry_delay = self.config.getint("general", "retry_delay")
+        
+        return True
+    
+    def get_streamers_list(self) -> List[str]:
+        """Get the list of streamers to monitor from the configuration."""
+        if not self.config:
+            return []
+        
+        if not self.config.has_option("streamers", "streamers"):
+            logger.error("No streamers defined in configuration")
+            return []
+        
+        # Get the comma-separated list of streamers and strip whitespace
+        streamers_str = self.config.get("streamers", "streamers")
+        return [s.strip() for s in streamers_str.split(",") if s.strip()]
+    
+    def start(self):
+        """Start monitoring all configured streamers."""
+        if self.running:
+            logger.warning("Stream manager is already running")
+            return
+        
+        if not self.load_configuration():
+            logger.error("Cannot start stream manager: missing configuration")
+            return
+        
+        streamers = self.get_streamers_list()
+        if not streamers:
+            logger.error("No streamers to monitor")
+            return
+        
+        logger.info(f"Starting to monitor {len(streamers)} streamers: {', '.join(streamers)}")
+        
+        # Create and start a monitor for each streamer
+        for streamer_name in streamers:
+            monitor = StreamerMonitor(streamer_name, self.retry_delay)
+            self.monitors[streamer_name] = monitor
+            monitor.daemon = True  # Set as daemon so they exit when main thread exits
+            monitor.start()
+        
+        self.running = True
+        logger.success("Stream manager started successfully")
+    
+    def stop(self):
+        """Stop all streamer monitors."""
+        if not self.running:
+            return
+        
+        logger.info("Stopping all streamer monitors...")
+        
+        # Stop all monitors
+        for streamer_name, monitor in self.monitors.items():
+            logger.info(f"Stopping monitor for {streamer_name}")
+            monitor.stop()
+            monitor.join(timeout=1) 
+        
+        self.monitors.clear()
+        self.running = False
+        logger.info("All streamer monitors stopped")
+    
+    def add_streamer(self, streamer_name: str) -> bool:
+        """Add a new streamer to monitor."""
+        if streamer_name in self.monitors:
+            logger.warning(f"Streamer {streamer_name} is already being monitored")
+            return False
+        
+        monitor = StreamerMonitor(streamer_name, self.retry_delay)
+        self.monitors[streamer_name] = monitor
+        monitor.daemon = True
+        monitor.start()
+        
+        logger.info(f"Started monitoring {streamer_name}")
+        return True
+    
+    def remove_streamer(self, streamer_name: str) -> bool:
+        """Remove a streamer from monitoring."""
+        if streamer_name not in self.monitors:
+            logger.warning(f"Streamer {streamer_name} is not being monitored")
+            return False
+        
+        monitor = self.monitors[streamer_name]
+        monitor.stop()
+        monitor.join(timeout=5)
+        
+        del self.monitors[streamer_name]
+        logger.info(f"Stopped monitoring {streamer_name}")
+        return True
+    
+    def list_monitored_streamers(self) -> List[str]:
+        """Get a list of currently monitored streamers."""
+        return list(self.monitors.keys())
+    
+    def wait_for_completion(self):
+        """Wait for all monitors to complete (blocks indefinitely)."""
+        try:
+            # Keep the main thread alive
+            while self.running:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            logger.info("Keyboard interrupt received, shutting down...")
+            self.stop()
