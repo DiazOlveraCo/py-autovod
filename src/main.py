@@ -98,6 +98,7 @@ def process_video(
         ],
         stdout=sys.stdout,
     )
+    # streamlink returns when stream ends
     return result.returncode == 0
 
     # if upload_service == "youtube":
@@ -241,14 +242,14 @@ def main():
                     config["source"]["api_url"], streamer_name
                 )
 
-            upload_success = process_video(
+            download_success = process_video(
                 stream_source_url, config, streamer_name, video_title, video_description
             )
 
-            if upload_success:
-                logger.success("Stream uploaded successfully")
+            if download_success:
+                logger.success("Stream downloaded successfully")
             else:
-                logger.error("Stream upload failed")
+                logger.error("Stream download failed")
 
         else:
             logger.info(f"Stream is offline. Retrying in {RETRY_DELAY} seconds...")
