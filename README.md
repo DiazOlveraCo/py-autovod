@@ -17,20 +17,25 @@ Manually install ffmpeg, streamlink, jq, pm2, YoutubeUploader. Alternatively, yo
 
 ## Setup
 
-1. Install the required dependencies:
+1. Install the packages:
+   ```bash
+   apt install ffmpeg streamlink jq pm2
+   ```
+
+2. Install the required dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-2. Configure the streamers you want to monitor in `config.ini`:
+3. Configure the streamers you want to monitor in `config.ini`:
    ```ini
    [streamers]
    streamers = streamer1, streamer2, streamer3
    ```
 
-3. Create a configuration file for each streamer (e.g., `streamer1.ini`).
+4. Create a configuration file for each streamer (e.g., `streamer1.ini`).
 
-4. Run the application:
+5. Run the application:
    ```bash
    python src/main.py
    ```
