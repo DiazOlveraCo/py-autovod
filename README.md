@@ -48,8 +48,6 @@ To use this feature:
 1. Download a Vosk model from [https://alphacephei.com/vosk/models](https://alphacephei.com/vosk/models)
 2. Configure the transcription settings in `config.ini`
 
-For more details, see [TRANSCRIPTION.md](TRANSCRIPTION.md).
-
 ## Contribution
 
 Contributors are welcome! Please feel free to submit a PR or issue.
