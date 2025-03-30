@@ -2,6 +2,8 @@ import os
 import subprocess
 from typing import List, Optional, Tuple
 from loguru import logger
+import configparser
+
 
 
 def run_command(
@@ -23,7 +25,6 @@ def is_docker() -> bool:
 
 
 def determine_source(stream_source: str, streamer_name: str) -> str:
-    """Determine the stream source URL based on the source type and streamer name."""
     sources = {
         "twitch": f"twitch.tv/{streamer_name}",
         "kick": f"kick.com/{streamer_name}",
@@ -48,34 +49,14 @@ def fetch_metadata(api_url: str, streamer_name: str) -> Tuple[str, str]:
     # Placeholder for actual implementation
     return None, None
 
-
-def load_config(streamer_name: str):
-    """Load configuration for a specific streamer."""
-    import configparser
-
+def load_config(config_name: str):
     config = configparser.ConfigParser()
-    config_file = f"{streamer_name}.ini"
-
+    config_file = f"{config_name}.ini"
+    
     if not os.path.isfile(config_file):
-        logger.error(f"No config file found for {streamer_name}")
+        logger.error(f"No config file found for {config_name}")
         return None
 
     config.read(config_file)
     logger.info(f"Loaded configuration from {config_file}")
-    return config
-
-
-def load_main_config():
-    """Load the main configuration file."""
-    import configparser
-
-    config = configparser.ConfigParser()
-    config_file = "config.ini"
-
-    if not os.path.isfile(config_file):
-        logger.error("Main config file (config.ini) not found")
-        return None
-
-    config.read(config_file)
-    logger.info(f"Loaded main configuration from {config_file}")
     return config

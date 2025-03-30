@@ -4,7 +4,7 @@ import os
 import sys
 import argparse
 from loguru import logger
-from utils import is_docker, load_main_config
+from utils import (is_docker, load_config)
 import settings
 from stream_manager import StreamManager
 from streamer_monitor import StreamerMonitor
@@ -22,11 +22,10 @@ settings.init()
 def main():
     version = settings.config.get("general", "version")
 
-    logger.info(f"Starting AutoVOD v{version}")
+    print(f"Starting AutoVOD v{version}")
+    
+    parser = argparse.ArgumentParser(description="AutoVOD - Automatic VOD downloader for Twitch, Kick, and YouTube")
 
-    parser = argparse.ArgumentParser(
-        description="AutoVOD - Automatic VOD downloader for Twitch, Kick, and YouTube"
-    )
     parser.add_argument("-n", "--name", help="Single streamer name to monitor")
     parser.add_argument(
         "-v",
@@ -35,8 +34,7 @@ def main():
         help="Display the current version of AutoVOD",
     )
     args = parser.parse_args()
-
-    # Create recordings directory if it doesn't exist
+    
     if not os.path.exists("recordings"):
         try:
             os.mkdir("recordings")
@@ -50,8 +48,8 @@ def main():
 
     # Create the stream manager
     manager = StreamManager(settings.config)
-
-    # Normal operation - start the manager and wait
+    
+    # start the manager and wait
     manager.start()
     manager.wait_for_completion()
 
