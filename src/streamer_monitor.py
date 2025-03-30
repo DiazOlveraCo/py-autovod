@@ -36,11 +36,9 @@ class StreamerMonitor(threading.Thread):
         self._load_configuration()
     
     def _load_configuration(self) -> bool:
-        """Load the streamer-specific configuration."""
-        self.config = load_config("default") # self.streamer_name
+        self.config = load_config(self.streamer_name)
         if not self.config:
-            logger.error(f"Failed to load configuration for {self.streamer_name}")
-            return False
+            self.config = load_config("default")
         
         stream_source = self.config["source"]["stream_source"]
         self.stream_source_url = determine_source(stream_source, self.streamer_name)

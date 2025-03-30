@@ -34,7 +34,7 @@ class StreamManager:
             logger.error("No streamers defined in configuration")
             return []
         
-        # Get the comma-separated list of streamers and strip whitespace
+        # Get the comma-separated list of streamers
         streamers_str = self.config.get("streamers", "streamers")
         return [s.strip() for s in streamers_str.split(",") if s.strip()]
     
