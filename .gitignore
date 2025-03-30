@@ -23,8 +23,6 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-*.ts
-
 
 # Installer logs
 pip-log.txt
@@ -70,5 +68,11 @@ lib64
 !default.ini
 
 # Vosk models
+/models
+
+# Media files
+*.ts 
+*.wav
+
 
 

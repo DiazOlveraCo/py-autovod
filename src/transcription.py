@@ -79,13 +79,13 @@ def extract_audio_from_ts(ts_file_path: str, output_wav_path: Optional[str] = No
         logger.error(f"Error extracting audio: {str(e)}")
         raise
 
-def transcribe_audio(audio_file_path: str, model_path: str) -> Dict:
+def transcribe_audio(audio_file_path: str, model_name: str) -> Dict:
     """
     Transcribe audio file using Vosk.
     
     Args:
         audio_file_path: Path to the audio file (WAV format)
-        model_path: Path to the Vosk model directory
+        model_name: 
     
     Returns:
         Dictionary containing the transcription with timestamps
@@ -93,16 +93,13 @@ def transcribe_audio(audio_file_path: str, model_path: str) -> Dict:
     if not VOSK_AVAILABLE:
         raise ImportError("Vosk library is not available. Please install it with 'pip install vosk'")
     
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Vosk model not found at {model_path}")
-    
     if not os.path.exists(audio_file_path):
         raise FileNotFoundError(f"Audio file not found: {audio_file_path}")
     
     logger.info(f"Transcribing audio file: {audio_file_path}")
     
-    # Load the model
-    model = vosk.Model(model_path)
+    # For a smaller download size, use model = Model(model_name="vosk-model-small-en-us-0.15")
+    model = vosk.Model(model_name= model_name) 
     
     # Open the audio file
     wf = wave.open(audio_file_path, "rb")
@@ -149,8 +146,10 @@ def transcribe_audio(audio_file_path: str, model_path: str) -> Dict:
     }
     
     full_text = []
+
     
     for word in results:
+        print(word)
         if 'start' in word and 'end' in word and 'word' in word:
             # If this word is more than 2 seconds after the last one, start a new segment
             if current_segment["text"] and (word['start'] - current_segment["end"]) > 2.0:
@@ -189,7 +188,7 @@ def save_transcript(transcript: Dict, output_path: str) -> None:
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(transcript, f, ensure_ascii=False, indent=2)
 
-def process_ts_file(ts_file_path: str, model_path: str, cleanup_wav: bool = True) -> Tuple[bool, Optional[str]]:
+def process_ts_file(ts_file_path: str, model_name: str, cleanup_wav: bool = False) -> Tuple[bool, Optional[str]]:
     """
     Process a .ts file to generate a transcript.
     
@@ -213,7 +212,7 @@ def process_ts_file(ts_file_path: str, model_path: str, cleanup_wav: bool = True
         wav_path = extract_audio_from_ts(ts_file_path)
         
         # Transcribe audio
-        transcript = transcribe_audio(wav_path, model_path)
+        transcript = transcribe_audio(wav_path, model_name)
         
         # Save transcript
         save_transcript(transcript, transcript_path)

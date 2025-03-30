@@ -37,7 +37,7 @@ class StreamerMonitor(threading.Thread):
     
     def _load_configuration(self) -> bool:
         """Load the streamer-specific configuration."""
-        self.config = load_config(self.streamer_name)
+        self.config = load_config("default") # self.streamer_name
         if not self.config:
             logger.error(f"Failed to load configuration for {self.streamer_name}")
             return False
@@ -71,13 +71,13 @@ class StreamerMonitor(threading.Thread):
         # Add flags from config if available
         if self.config.has_option("streamlink", "flags"):
             flags = self.config.get("streamlink", "flags").split(",")
-            # Strip whitespace from each flag
             flags = [flag.strip() for flag in flags if flag.strip()]
             command.extend(flags)
         
         result = run_command(
             command,
             stdout=sys.stdout,
+            stderr=sys.stdout,
         )
         
         # streamlink returns when stream ends
@@ -94,15 +94,14 @@ class StreamerMonitor(threading.Thread):
                     latest_file = max(files, key=os.path.getmtime)
                     logger.info(f"Found latest recording: {latest_file}")
                     
-                    # Get model path from config
-                    model_path = settings.config.get("transcription", "model_path")
+                    model_name = settings.config.get("transcription", "model_name")
                     cleanup_wav = settings.config.getboolean("transcription", "cleanup_wav", fallback=True)
                     
                     # Process the file for transcription
                     try:
                         transcription_success, transcript_path = process_ts_file(
                             latest_file, 
-                            model_path,
+                            model_name,
                             cleanup_wav
                         )
                         
@@ -118,7 +117,6 @@ class StreamerMonitor(threading.Thread):
         return success
     
     def run(self):
-        """Main monitoring loop."""
         if not self.config or not self.stream_source_url:
             logger.error(f"Cannot start monitoring for {self.streamer_name}: missing configuration")
             return

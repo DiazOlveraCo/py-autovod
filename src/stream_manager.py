@@ -76,32 +76,6 @@ class StreamManager:
         self.running = False
         logger.info("All streamer monitors stopped")
     
-    def add_streamer(self, streamer_name: str) -> bool:
-        if streamer_name in self.monitors:
-            logger.warning(f"Streamer {streamer_name} is already being monitored")
-            return False
-        
-        monitor = StreamerMonitor(streamer_name, self.retry_delay)
-        self.monitors[streamer_name] = monitor
-        monitor.daemon = True
-        monitor.start()
-        
-        logger.info(f"Started monitoring {streamer_name}")
-        return True
-    
-    def remove_streamer(self, streamer_name: str) -> bool:
-        if streamer_name not in self.monitors:
-            logger.warning(f"Streamer {streamer_name} is not being monitored")
-            return False
-        
-        monitor = self.monitors[streamer_name]
-        monitor.stop()
-        monitor.join(timeout=5)
-        
-        del self.monitors[streamer_name]
-        logger.info(f"Stopped monitoring {streamer_name}")
-        return True
-    
     def list_monitored_streamers(self) -> List[str]:
         return list(self.monitors.keys())
     
