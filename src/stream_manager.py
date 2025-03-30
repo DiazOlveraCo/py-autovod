@@ -6,7 +6,6 @@ from loguru import logger
 
 from utils import load_main_config
 from streamer_monitor import StreamerMonitor
-from settings import RETRY_DELAY
 
 class StreamManager:
     """Class to manage multiple streamer monitors."""
@@ -16,7 +15,7 @@ class StreamManager:
         self.monitors: Dict[str, StreamerMonitor] = {}
         self.running = False
         self.config = None
-        self.retry_delay = RETRY_DELAY
+        self.retry_delay = 60
         
         # Set up signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self._signal_handler)

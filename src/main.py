@@ -4,10 +4,9 @@ import os
 import sys
 import argparse
 from loguru import logger
-from utils import (is_docker)
+from utils import (is_docker, get_version)
 from stream_manager import StreamManager
 from streamer_monitor import StreamerMonitor
-from settings import VERSION
 
 # Configure logger to include timestamp
 logger.remove()
@@ -18,18 +17,24 @@ logger.add(
 )
 
 def main():
-    logger.info(f"Starting AutoVOD v{VERSION}")
+    logger.info(f"Starting AutoVOD v{get_version()}")
     
     parser = argparse.ArgumentParser(description="AutoVOD - Automatic VOD downloader for Twitch, Kick, and YouTube")
     parser.add_argument("-n", "--name", help="Single streamer name to monitor")
     parser.add_argument("-a", "--add", help="Add a streamer to monitor")
     parser.add_argument("-r", "--remove", help="Remove a streamer from monitoring")
     parser.add_argument("-l", "--list", action="store_true", help="List currently monitored streamers")
+    parser.add_argument("-v", "--version", action="store_true", help="Display the current version of AutoVOD")
     args = parser.parse_args()
     
     # Create recordings directory if it doesn't exist
     os.makedirs("recordings", exist_ok=True)
     
+    # Display version and exit
+    if args.version:
+        print(f"AutoVOD v{get_version()}")
+        return
+        
     # Single streamer mode
     if args.name:
         logger.info(f"Running for a single streamer: {args.name}")

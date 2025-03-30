@@ -74,3 +74,15 @@ def load_main_config():
     logger.info(f"Loaded main configuration from {config_file}")
     return config
 
+def get_version():
+    """Get the current version of AutoVOD from config.ini."""
+    config = load_main_config()
+    if not config:
+        logger.error("Failed to load configuration, cannot determine version")
+        return "unknown"
+    
+    try:
+        return config.get("general", "version")
+    except (configparser.NoSectionError, configparser.NoOptionError):
+        logger.error("Version information not found in config.ini")
+        return "unknown"
