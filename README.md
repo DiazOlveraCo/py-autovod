@@ -48,7 +48,3 @@ To use this feature:
 ## Contribution
 
 Contributors are welcome! Please feel free to submit a PR or issue.
-
-## Disclaimer
-
-This software is provided as-is with no warranty. Use at your own risk.
