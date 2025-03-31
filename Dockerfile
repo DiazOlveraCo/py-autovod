@@ -1,4 +1,4 @@
-# This is a temporary file, it will not work for this project
+# This is a temporary file right now it will not work for this project
 
 # Build from python slim image
 FROM python:3.13-slim
@@ -16,6 +16,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     tzdata \
     xvfb \
+    pm2 \
+    ffmpeg \
+    streamlink \
 && rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies
