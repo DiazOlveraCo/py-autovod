@@ -15,7 +15,8 @@ A Python implementation of [autovod](https://github.com/jenslys/AutoVOD) with so
 
 ## Installation
 
-Manually install ffmpeg, streamlink, jq, pm2, YoutubeUploader. Alternatively, you can do the installation automatically with `install.sh`
+Manually install ffmpeg, streamlink, jq, pm2, YoutubeUploader. Alternatively, you can do the installation automatically with `install.sh` 
+Python 3.9+ is required.
 
 ## Setup
 
@@ -35,11 +36,11 @@ Manually install ffmpeg, streamlink, jq, pm2, YoutubeUploader. Alternatively, yo
    streamers = streamer1, streamer2, streamer3
    ```
 
-4. Create a configuration file for each streamer (e.g., `streamer1.ini`).
+4. Create a configuration file for each streamer where the file name is the streamer's username.
 
 5. Run the application:
    ```bash
-   python src/main.py
+   python3 src/main.py
    ```
 
 ## Transcription
