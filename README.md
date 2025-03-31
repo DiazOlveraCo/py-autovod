@@ -1,5 +1,5 @@
 # AutoVOD.py
-[![MIT licensed](https://img.shields.io/crates/l/py-autovod.svg)](./LICENSE)
+[![MIT licensed](https://img.shields.io/crates/l/py-autovod.svg)](./LICENSE.md)
 
 A Python implementation of [autovod](https://github.com/jenslys/AutoVOD) with some extra features.
 
