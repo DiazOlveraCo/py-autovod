@@ -1,5 +1,6 @@
 # AutoVOD.py
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Issues](https://img.shields.io/github/issues/offish/twitchtube.svg)](https://github.com/0jc1/py-autovod/issues)
 
 A Python implementation of [autovod](https://github.com/jenslys/AutoVOD) with some extra features.
 
