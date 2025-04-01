@@ -3,23 +3,23 @@ import time
 import signal
 from typing import Dict, List
 from loguru import logger
-import settings
 from streamer_monitor import StreamerMonitor
-
+import settings
+import utils
 
 class StreamManager:
     """Class to manage multiple streamer monitors."""
 
     def __init__(self):
         """Initialize the stream manager."""
+        
         self.monitors: Dict[str, StreamerMonitor] = {}
         self.running = False
         self.retry_delay = 120
 
-        if settings.config.has_option("general","retry_delay"):
-            self.retry_delay = settings.config.getint("general","retry_delay")
+        if settings.config.has_option("general", "retry_delay"):
+            self.retry_delay = settings.config.getint("general", "retry_delay")
 
-        # Set up signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
 
@@ -60,7 +60,6 @@ class StreamManager:
             self.monitors[streamer_name] = monitor
             monitor.daemon = True  # Set as daemon so they exit when main thread exits
             monitor.start()
-            time.sleep(1)
 
         self.running = True
         logger.success("Stream manager started successfully")
@@ -69,12 +68,12 @@ class StreamManager:
         if not self.running:
             return
 
-        logger.info("Stopping all streamer monitors...")
+        logger.info("Stopping all streamer monitors..")
 
         # Stop all monitors
         for streamer_name, monitor in self.monitors.items():
             monitor.stop()
-            monitor.join(timeout=0.1)
+            monitor.join(timeout=0.01)
 
         self.monitors.clear()
         self.running = False
@@ -82,10 +81,15 @@ class StreamManager:
     def list_monitored_streamers(self) -> List[str]:
         return list(self.monitors.keys())
 
-    def wait_for_completion(self):
+    def wait(self):
+        init_file_size = utils.get_size("recordings")
         try:
             # Keep the main thread alive
             while self.running:
+                cur_file_size = utils.get_size("recordings")
+                
+                dir = cur_file_size - init_file_size
+                
                 time.sleep(1)
         except KeyboardInterrupt:
             logger.info("Keyboard interrupt received, shutting down...")

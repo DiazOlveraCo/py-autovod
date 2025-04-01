@@ -4,7 +4,6 @@ import os
 import sys
 import argparse
 from loguru import logger
-from utils import (is_docker, load_config)
 import settings
 from stream_manager import StreamManager
 from streamer_monitor import StreamerMonitor
@@ -21,7 +20,7 @@ settings.init()
 
 def main():
     version = settings.config.get("general", "version")
-
+        
     print(f"Starting AutoVOD v{version}")
     
     parser = argparse.ArgumentParser(description="AutoVOD - Automatic VOD downloader for Twitch, Kick, and YouTube")
@@ -31,7 +30,7 @@ def main():
         "-v",
         "--version",
         action="store_true",
-        help="Display the current version of AutoVOD",
+        help="Display the current version",
     )
     args = parser.parse_args()
     
@@ -51,7 +50,7 @@ def main():
     
     # start the manager and wait
     manager.start()
-    manager.wait_for_completion()
+    manager.wait()
 
 
 if __name__ == "__main__":

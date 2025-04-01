@@ -18,7 +18,7 @@ class StreamerMonitor(threading.Thread):
     """Class to monitor and download streams for a single streamer."""
 
     def __init__(self, streamer_name: str, retry_delay: int = 60):
-        """Initialize the streamer monitor.
+        """
 
         Args:
             streamer_name: The name of the streamer to monitor
@@ -31,7 +31,6 @@ class StreamerMonitor(threading.Thread):
         self.config = None
         self.stream_source_url = None
 
-        # Initialize
         self._load_configuration()
 
     def _load_configuration(self) -> bool:
@@ -49,7 +48,6 @@ class StreamerMonitor(threading.Thread):
         return True
 
     def process_video(self, video_title=None, video_description=None) -> bool:
-        """Process and download a live stream."""
         if not self.config:
             return False
 
