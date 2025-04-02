@@ -42,7 +42,7 @@ def main():
 
     # Display version and exit
     if args.version:
-        print(f"AutoVOD v{version}")
+        print(f"Version: {version}")
         return
 
     # Create the stream manager
@@ -54,4 +54,5 @@ def main():
 
 
 if __name__ == "__main__":
+    assert sys.version_info >= (3, 4), "Python 3.4 or higher is required"
     main()

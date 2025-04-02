@@ -73,7 +73,7 @@ class StreamManager:
         # Stop all monitors
         for streamer_name, monitor in self.monitors.items():
             monitor.stop()
-            monitor.join(timeout=0.01)
+            monitor.join(timeout=0.02)
 
         self.monitors.clear()
         self.running = False
@@ -82,13 +82,19 @@ class StreamManager:
         return list(self.monitors.keys())
 
     def wait(self):
-        init_file_size = utils.get_size("recordings")
+        prev_size = utils.get_size("recordings") 
+        total = 0
+        
+        time.sleep(3)
+        
         try:
-            # Keep the main thread alive
             while self.running:
-                cur_file_size = utils.get_size("recordings")
-                
-                dir = cur_file_size - init_file_size
+                cur_file_size = utils.get_size("recordings")  # in MB
+                speed = cur_file_size - prev_size   
+                prev_size = cur_file_size  
+                total += speed
+
+                print(f"\rDownload speed: {speed:.4f} MB/s | Total: {total:.4f} MB \n", end="", flush=True)
                 
                 time.sleep(1)
         except KeyboardInterrupt:

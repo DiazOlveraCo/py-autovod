@@ -12,6 +12,7 @@ def run_command(
 ) -> subprocess.CompletedProcess:
     """Execute a command and return the result."""
     logger.debug(f"Executing: {' '.join(cmd)}")
+    assert len(cmd) > 0, "Cmd list empty"
     try:
         return subprocess.run(cmd, stdout=stdout, stderr=stderr)
     except subprocess.CalledProcessError as e:
@@ -24,6 +25,7 @@ def is_docker() -> bool:
 
 
 def determine_source(stream_source: str, streamer_name: str) -> str:
+    assert stream_source and streamer_name, "Strings shouldn't be empty"
     sources = {
         "twitch": f"twitch.tv/{streamer_name}",
         "kick": f"kick.com/{streamer_name}",
@@ -38,7 +40,7 @@ def check_stream_live(url: str) -> bool:
     result = run_command(["streamlink", url])
     return result.returncode == 0
 
-def get_size(path):
+def get_size(path : str) -> int:
     """returns the file sizes in MB of files in a dir"""
     b =  sum( os.path.getsize(os.path.join(dirpath,filename)) for dirpath, dirnames, filenames in os.walk( path ) for filename in filenames )
     return b/1000000
