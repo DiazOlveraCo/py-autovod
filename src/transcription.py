@@ -7,7 +7,6 @@ from loguru import logger
 
 try:
     import vosk
-
     VOSK_AVAILABLE = True
 except ImportError:
     VOSK_AVAILABLE = False

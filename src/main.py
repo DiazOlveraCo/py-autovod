@@ -52,7 +52,6 @@ def main():
     manager.start()
     manager.wait()
 
-
 if __name__ == "__main__":
-    assert sys.version_info >= (3, 4), "Python 3.4 or higher is required"
+    assert sys.version_info >= (3, 9), "Python 3.9 or higher is required"
     main()

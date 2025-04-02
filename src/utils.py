@@ -45,6 +45,7 @@ def get_size(path : str) -> int:
     b =  sum( os.path.getsize(os.path.join(dirpath,filename)) for dirpath, dirnames, filenames in os.walk( path ) for filename in filenames )
     return b/1000000
 
+
 def fetch_metadata(api_url: str, streamer_name: str) -> Tuple[str, str]:
     # TODO: Implement this function properly
     # streamlink --json twitch.tv/bobross | jq .metadata

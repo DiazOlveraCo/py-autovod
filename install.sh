@@ -52,13 +52,6 @@ for package in "${packages[@]}"; do
   fi
 done
 
-printf "${g}[$now] Installing PM2${c}\n"
-if ! [ -x "$(command -v pm2)" ]; then
-  npm install pm2 -g && pm2 startup
-else
-  printf "${g}[$now] PM2 is already installed. Skipping...${c}\n"
-fi
-
 printf "${g}[$now] Installing Streamlink${c}\n"
 if ! [ -x "$(command -v streamlink)" ]; then
   pip3 install --upgrade streamlink
