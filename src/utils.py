@@ -40,10 +40,15 @@ def check_stream_live(url: str) -> bool:
     result = run_command(["streamlink", url])
     return result.returncode == 0
 
-def get_size(path : str) -> int:
+
+def get_size(path: str) -> int:
     """returns the file sizes in MB of files in a dir"""
-    b =  sum( os.path.getsize(os.path.join(dirpath,filename)) for dirpath, dirnames, filenames in os.walk( path ) for filename in filenames )
-    return b/1000000
+    b = sum(
+        os.path.getsize(os.path.join(dirpath, filename))
+        for dirpath, dirnames, filenames in os.walk(path)
+        for filename in filenames
+    )
+    return b / 1000000
 
 
 def fetch_metadata(api_url: str, streamer_name: str) -> Tuple[str, str]:
@@ -55,10 +60,11 @@ def fetch_metadata(api_url: str, streamer_name: str) -> Tuple[str, str]:
     # Placeholder for actual implementation
     return None, None
 
+
 def load_config(config_name: str):
     config = configparser.ConfigParser()
     config_file = f"{config_name}.ini"
-    
+
     if not os.path.isfile(config_file):
         logger.error(f"No config file found for {config_name}")
         return None

@@ -7,12 +7,13 @@ from streamer_monitor import StreamerMonitor
 import settings
 import utils
 
+
 class StreamManager:
     """Class to manage multiple streamer monitors."""
 
     def __init__(self):
         """Initialize the stream manager."""
-        
+
         self.monitors: Dict[str, StreamerMonitor] = {}
         self.running = False
         self.retry_delay = 120
@@ -38,7 +39,9 @@ class StreamManager:
             return []
 
         streamers_str = settings.config.get("streamers", "streamers")
-        return set([s.strip() for s in streamers_str.strip(",").split(",") if s.strip()])
+        return set(
+            [s.strip() for s in streamers_str.strip(",").split(",") if s.strip()]
+        )
 
     def start(self):
         if self.running:
@@ -83,20 +86,24 @@ class StreamManager:
         return list(self.monitors.keys())
 
     def wait(self):
-        prev_size = utils.get_size("recordings") 
+        prev_size = utils.get_size("recordings")
         total = 0
-        
+
         time.sleep(3)
-        
+
         try:
             while self.running:
                 cur_file_size = utils.get_size("recordings")  # in MB
-                speed = cur_file_size - prev_size   
-                prev_size = cur_file_size  
+                speed = cur_file_size - prev_size
+                prev_size = cur_file_size
                 total += speed
 
-                print(f"\rDownload speed: {speed:.4f} MB/s | Total: {total:.4f} MB \n", end="", flush=True)
-                
+                print(
+                    f"\rDownload speed: {speed:.4f} MB/s | Total: {total:.4f} MB \n",
+                    end="",
+                    flush=True,
+                )
+
                 time.sleep(1)
         except KeyboardInterrupt:
             logger.info("Keyboard interrupt received, shutting down...")
