@@ -4,7 +4,7 @@ import os
 import sys
 import argparse
 from loguru import logger
-import settings
+import settings # note that settings are only loaded upon import
 from stream_manager import StreamManager
 from streamer_monitor import StreamerMonitor
 
@@ -14,8 +14,6 @@ logger.add(
     format="<green>[{time:HH:mm:ss}]</green> | <level>{message}</level>",
     colorize=True,
 )
-
-settings.init()
 
 
 def main():
