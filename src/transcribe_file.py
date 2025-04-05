@@ -2,14 +2,11 @@ import os
 import sys
 import argparse
 from loguru import logger
-import settings
+import settings # initialization takes place here
 from transcription import process_ts_file, check_dependencies
 
 
 def main():
-    # Initialize settings
-    settings.init()
-
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Transcribe a .ts video file")
     parser.add_argument("file", help="Path to the .ts file to transcribe")
