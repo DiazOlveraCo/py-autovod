@@ -4,6 +4,7 @@ from typing import List, Optional, Tuple, Dict
 from logger import logger
 import configparser
 
+
 def run_command(
     cmd: List[str],
     stdout: Optional[int] = subprocess.DEVNULL,
@@ -12,7 +13,7 @@ def run_command(
     if not cmd:
         logger.error("Command list is empty")
         return subprocess.CompletedProcess([], -1)
-        
+
     logger.debug(f"Executing: {' '.join(cmd)}")
     try:
         return subprocess.run(cmd, stdout=stdout, stderr=stderr)
@@ -29,7 +30,7 @@ def determine_source(stream_source: str, streamer_name: str) -> Optional[str]:
     if not stream_source or not streamer_name:
         logger.error("Stream source and streamer name cannot be empty")
         return None
-        
+
     sources: Dict[str, str] = {
         "twitch": f"twitch.tv/{streamer_name}",
         "kick": f"kick.com/{streamer_name}",
@@ -48,7 +49,7 @@ def get_size(path: str) -> float:
     if not os.path.exists(path):
         logger.warning(f"Path does not exist: {path}")
         return 0.0
-        
+
     bytes_total = sum(
         os.path.getsize(os.path.join(dirpath, filename))
         for dirpath, _, filenames in os.walk(path)

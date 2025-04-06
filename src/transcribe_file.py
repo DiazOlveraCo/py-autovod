@@ -4,6 +4,7 @@ import argparse
 import logger
 from settings import config
 
+
 def validate_file(file_path: str) -> bool:
     # Check if the file exists
     if not os.path.exists(file_path):
@@ -14,7 +15,7 @@ def validate_file(file_path: str) -> bool:
     if not file_path.lower().endswith(".ts"):
         logger.error(f"File is not a .ts file: {file_path}")
         return False
-        
+
     return True
 
 
@@ -39,14 +40,14 @@ def main():
 
     # Commented out as in the original code
     # success, transcript_path = process_ts_file(args.file, model_name, False)
-    # 
+    #
     # if success:
     #     logger.success(f"Transcription saved to: {transcript_path}")
     #     return 0
     # else:
     #     logger.error("Transcription failed")
     #     return 1
-    
+
     # Placeholder return until the commented code is implemented
     return 0
 

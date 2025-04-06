@@ -7,6 +7,7 @@ from logger import logger
 from stream_manager import StreamManager
 from settings import config
 
+
 def main() -> int:
     version = config.get("general", "version", fallback="1.0.0")
 
@@ -38,19 +39,20 @@ def main() -> int:
         return 0
 
     manager = StreamManager()
-    
+
     if args.name:
         manager.start(args.name)
     else:
         manager.start()
-        
+
     manager.wait()
     return 0
+
 
 if __name__ == "__main__":
     if sys.version_info < (3, 9):
         print("Error: Python 3.9 or higher is required")
         print("Current Python version: " + sys.version)
         sys.exit(1)
-        
+
     sys.exit(main())

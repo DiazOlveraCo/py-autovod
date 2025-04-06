@@ -51,7 +51,9 @@ class StreamerMonitor(threading.Thread):
 
         return True
 
-    def process_video(self, video_title: Optional[str] = None, video_description: Optional[str] = None) -> bool:
+    def process_video(
+        self, video_title: Optional[str] = None, video_description: Optional[str] = None
+    ) -> bool:
         if not self.config:
             return False
 
@@ -91,17 +93,17 @@ class StreamerMonitor(threading.Thread):
         if not os.path.exists(streamer_dir):
             logger.warning(f"Directory not found: {streamer_dir}")
             return
-            
+
         files = [
             os.path.join(streamer_dir, f)
             for f in os.listdir(streamer_dir)
             if f.endswith(".ts")
         ]
-        
+
         if not files:
             logger.warning(f"No .ts files found in {streamer_dir}")
             return
-            
+
         # Sort by modification time, newest first
         latest_file = max(files, key=os.path.getmtime)
         logger.info(f"Found latest recording: {latest_file}")
@@ -119,7 +121,7 @@ class StreamerMonitor(threading.Thread):
             ],
             stdout=sys.stdout,
         )
-        
+
         if convert_result.returncode != 0:
             logger.error(f"Failed to convert {latest_file} to MP4")
             return
@@ -174,7 +176,9 @@ class StreamerMonitor(threading.Thread):
                             f"Stream for {self.streamer_name} downloaded successfully"
                         )
                     else:
-                        logger.warning(f"Stream download failed for {self.streamer_name}")
+                        logger.warning(
+                            f"Stream download failed for {self.streamer_name}"
+                        )
 
                 else:
                     logger.info(

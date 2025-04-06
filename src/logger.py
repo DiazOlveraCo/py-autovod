@@ -14,4 +14,3 @@ logger.add(
 #     retention="1 week",
 #     format="[{time:YYYY-MM-DD HH:mm:ss}] | {level} | {message}",
 # )
-

@@ -1,4 +1,3 @@
-
 import sys
 import time
 import signal
@@ -16,9 +15,9 @@ class StreamManager:
         """Initialize the stream manager."""
         self.monitors: Dict[str, StreamerMonitor] = {}
         self.running = False
-        
+
         self.retry_delay = config.getint("general", "retry_delay", fallback=120)
-        
+
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
 
@@ -31,7 +30,7 @@ class StreamManager:
         if not config or not config.has_section("streamers"):
             logger.error("No streamers section in configuration")
             return []
-            
+
         if not config.has_option("streamers", "streamers"):
             logger.error("No streamers defined in configuration")
             return []
@@ -39,10 +38,10 @@ class StreamManager:
         streamers_str = config.get("streamers", "streamers", fallback="")
         if not streamers_str.strip():
             return []
-            
-        return list(set(
-            [s.strip() for s in streamers_str.strip(",").split(",") if s.strip()]
-        ))
+
+        return list(
+            set([s.strip() for s in streamers_str.strip(",").split(",") if s.strip()])
+        )
 
     def start(self, streamer_name: Optional[str] = None) -> None:
         if self.running:
@@ -96,14 +95,14 @@ class StreamManager:
         prev_size = get_size(recordings_dir)
         total = 0
         time.sleep(3)
-        
+
         try:
             while self.running:
                 cur_file_size = get_size(recordings_dir)  # in MB
                 speed = cur_file_size - prev_size
                 prev_size = cur_file_size
                 total += speed
-                
+
                 print(
                     f"\rDownload speed: {speed:.4f} MB/s | Total: {total:.4f} MB ",
                     end="",
