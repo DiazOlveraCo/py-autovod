@@ -44,12 +44,14 @@ def main():
     if args.version:
         print(f"Version: {version}")
         return
-
-    # Create the stream manager
+        
     manager = StreamManager()
 
-    # start the manager and wait
-    manager.start()
+    if args.name:
+        manager.start(args.name)
+    else:
+        manager.start()
+        
     manager.wait()
 
 

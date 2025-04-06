@@ -24,7 +24,7 @@ class StreamManager:
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
 
-    def _signal_handler(self, signum, frame):
+    def _signal_handler(self, signum):
         logger.info(f"Received signal {signum}, shutting down...")
         self.stop()
         sys.exit(0)
@@ -43,24 +43,29 @@ class StreamManager:
             [s.strip() for s in streamers_str.strip(",").split(",") if s.strip()]
         )
 
-    def start(self):
+    def start(self, streamer_name=None):
         if self.running:
             logger.warning("Stream manager is already running")
             return
 
-        streamers = self.get_streamers_list()
-        if not streamers:
-            logger.error("No streamers to monitor")
-            return
+        streamers : List[str] = []        
+
+        if streamer_name:
+            streamers = [streamer_name]
+        else:
+            streamers = self.get_streamers_list()
+            if not streamers:
+                logger.error("No streamers to monitor")
+                return
 
         logger.info(
             f"Starting to monitor {len(streamers)} streamers: {', '.join(streamers)}"
         )
 
         # Create and start a monitor for each streamer
-        for streamer_name in streamers:
-            monitor = StreamerMonitor(streamer_name, self.retry_delay)
-            self.monitors[streamer_name] = monitor
+        for name in streamers:
+            monitor = StreamerMonitor(name, self.retry_delay)
+            self.monitors[name] = monitor
             monitor.daemon = True  # Set as daemon so they exit when main thread exits
             monitor.start()
             time.sleep(1)
@@ -99,7 +104,7 @@ class StreamManager:
                 total += speed
 
                 print(
-                    f"\rDownload speed: {speed:.4f} MB/s | Total: {total:.4f} MB \n",
+                    f"\rDownload speed: {speed:.4f} MB/s | Total: {total:.4f} MB ",
                     end="",
                     flush=True,
                 )
