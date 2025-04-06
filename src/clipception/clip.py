@@ -62,6 +62,7 @@ def process_clips(input_file, output_dir, json_file, min_score=0):
         print(f"Total clips processed: {len(successful_clips) + len(failed_clips)}")
         print(f"Successfully extracted: {len(successful_clips)}")
         print(f"Failed extractions: {len(failed_clips)}")
+        remove_vod = False
         
         if successful_clips:
             print("\nSuccessful clips:")
