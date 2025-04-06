@@ -1,3 +1,5 @@
-from utils import *
+from utils import load_config
+import configparser
 
-config = load_config("config")
+config : configparser.ConfigParser = load_config("config")
+

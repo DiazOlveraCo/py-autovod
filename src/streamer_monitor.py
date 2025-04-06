@@ -2,7 +2,9 @@ import sys
 import time
 import threading
 import os
+from typing import Optional
 from logger import logger
+from settings import config
 from utils import (
     run_command,
     determine_source,
@@ -10,18 +12,12 @@ from utils import (
     fetch_metadata,
     load_config,
 )
-from settings import config
 
 
 class StreamerMonitor(threading.Thread):
     """Class to monitor and download streams for a single streamer."""
 
     def __init__(self, streamer_name: str, retry_delay: int = 60):
-        """
-        Args:
-            streamer_name: The name of the streamer to monitor
-            retry_delay: Time in seconds to wait between checks if stream is offline
-        """
         super().__init__(name=f"m-{streamer_name}")
         self.streamer_name = streamer_name
         self.retry_delay = retry_delay
@@ -35,9 +31,17 @@ class StreamerMonitor(threading.Thread):
         self.config = load_config(self.streamer_name)
         if not self.config:
             self.config = load_config("default")
+            if not self.config:
+                logger.error("Failed to load default config")
+                return False
 
-        stream_source = self.config["source"]["stream_source"]
-        self.stream_source_url = determine_source(stream_source, self.streamer_name)
+        # Get stream source from config
+        try:
+            stream_source = self.config["source"]["stream_source"]
+            self.stream_source_url = determine_source(stream_source, self.streamer_name)
+        except KeyError:
+            logger.error(f"Missing source configuration for {self.streamer_name}")
+            return False
 
         if not self.stream_source_url:
             logger.error(
@@ -47,7 +51,7 @@ class StreamerMonitor(threading.Thread):
 
         return True
 
-    def process_video(self, video_title=None, video_description=None) -> bool:
+    def process_video(self, video_title: Optional[str] = None, video_description: Optional[str] = None) -> bool:
         if not self.config:
             return False
 
@@ -76,54 +80,69 @@ class StreamerMonitor(threading.Thread):
 
         # If download was successful and transcription is enabled, process the video for transcription
         if success and config.getboolean("transcription", "enabled", fallback=False):
-            # Find the most recently downloaded file
-            streamer_dir = f"recordings/{self.streamer_name}"
-            if os.path.exists(streamer_dir):
-                files = [
-                    os.path.join(streamer_dir, f)
-                    for f in os.listdir(streamer_dir)
-                    if f.endswith(".ts")
-                ]
-                if files:
-                    # Sort by modification time, newest first
-                    latest_file = max(files, key=os.path.getmtime)
-                    logger.info(f"Found latest recording: {latest_file}")
-
-                    run_command(
-                        [
-                            "ffmpeg",
-                            "-i",
-                            latest_file,
-                            "-c",
-                            "copy",
-                            latest_file.replace(".ts", ".mp4"),
-                        ],
-                        stdout=sys.stdout,
-                    )
-
-                    model_name = config.get("transcription", "model_name")
-                    cleanup_wav = config.getboolean(
-                        "transcription", "cleanup_wav", fallback=True
-                    )
-
-                    # Process the file for transcription
-                    # try:
-                    #     transcription_success, transcript_path = process_ts_file(
-                    #         latest_file, model_name, cleanup_wav
-                    #     )
-
-                    #     if transcription_success:
-                    #         logger.success(f"Transcription saved to {transcript_path}")
-                    #     else:
-                    #         logger.error("Transcription failed")
-                    # except Exception as e:
-                    #     logger.error(f"Error during transcription: {e}")
-                else:
-                    logger.warning(f"No .ts files found in {streamer_dir}")
+            self._process_transcription()
 
         return success
 
-    def run(self):
+    def _process_transcription(self) -> None:
+        """Process the latest downloaded file for transcription."""
+        # Find the most recently downloaded file
+        streamer_dir = f"recordings/{self.streamer_name}"
+        if not os.path.exists(streamer_dir):
+            logger.warning(f"Directory not found: {streamer_dir}")
+            return
+            
+        files = [
+            os.path.join(streamer_dir, f)
+            for f in os.listdir(streamer_dir)
+            if f.endswith(".ts")
+        ]
+        
+        if not files:
+            logger.warning(f"No .ts files found in {streamer_dir}")
+            return
+            
+        # Sort by modification time, newest first
+        latest_file = max(files, key=os.path.getmtime)
+        logger.info(f"Found latest recording: {latest_file}")
+
+        # Convert to MP4
+        mp4_file = latest_file.replace(".ts", ".mp4")
+        convert_result = run_command(
+            [
+                "ffmpeg",
+                "-i",
+                latest_file,
+                "-c",
+                "copy",
+                mp4_file,
+            ],
+            stdout=sys.stdout,
+        )
+        
+        if convert_result.returncode != 0:
+            logger.error(f"Failed to convert {latest_file} to MP4")
+            return
+
+        # model_name = config.get("transcription", "model_name")
+        # cleanup_wav = config.getboolean(
+        #     "transcription", "cleanup_wav", fallback=True
+        # )
+
+        # Process the file for transcription (commented out as in original)
+        # try:
+        #     transcription_success, transcript_path = process_ts_file(
+        #         latest_file, model_name, cleanup_wav
+        #     )
+        #
+        #     if transcription_success:
+        #         logger.success(f"Transcription saved to {transcript_path}")
+        #     else:
+        #         logger.error("Transcription failed")
+        # except Exception as e:
+        #     logger.error(f"Error during transcription: {e}")
+
+    def run(self) -> None:
         if not self.config or not self.stream_source_url:
             logger.error(
                 f"Cannot start monitoring for {self.streamer_name}: missing configuration"
@@ -155,7 +174,7 @@ class StreamerMonitor(threading.Thread):
                             f"Stream for {self.streamer_name} downloaded successfully"
                         )
                     else:
-                        logger.error(f"Stream download failed for {self.streamer_name}")
+                        logger.warning(f"Stream download failed for {self.streamer_name}")
 
                 else:
                     logger.info(
@@ -165,10 +184,8 @@ class StreamerMonitor(threading.Thread):
             except Exception as e:
                 logger.error(f"Error monitoring {self.streamer_name}: {e}")
 
-            # Sleep before next check
             time.sleep(self.retry_delay)
 
-    def stop(self):
-        """Stop the monitoring thread."""
+    def stop(self) -> None:
         self.running = False
         logger.info(f"Stopped monitoring {self.streamer_name}")

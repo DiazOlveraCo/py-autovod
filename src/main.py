@@ -3,13 +3,14 @@
 import os
 import sys
 import argparse
-from settings import config
+from logger import logger
 from stream_manager import StreamManager
+from settings import config
 
-def main():
+def main() -> int:
     version = config.get("general", "version", fallback="1.0.0")
 
-    print(f"Starting AutoVOD v{version}")
+    logger.info(f"Starting AutoVOD v{version}")
 
     parser = argparse.ArgumentParser(
         description="AutoVOD - Automatic VOD downloader for Twitch, Kick, and YouTube"
@@ -24,27 +25,32 @@ def main():
     )
     args = parser.parse_args()
 
-    if not os.path.exists("recordings"):
+    recordings_dir = "recordings"
+    if not os.path.exists(recordings_dir):
         try:
-            os.mkdir("recordings")
-        except:
-            pass
+            os.mkdir(recordings_dir)
+        except Exception as e:
+            print(f"Failed to create recordings directory: {e}")
+            return 1
 
-    # Display version and exit
     if args.version:
         print(f"Version: {version}")
-        return
+        return 0
 
     manager = StreamManager()
-
+    
     if args.name:
         manager.start(args.name)
     else:
         manager.start()
-
+        
     manager.wait()
-
+    return 0
 
 if __name__ == "__main__":
-    assert sys.version_info >= (3, 9), "Python 3.9 or higher is required"
-    main()
+    if sys.version_info < (3, 9):
+        print("Error: Python 3.9 or higher is required")
+        print("Current Python version: " + sys.version)
+        sys.exit(1)
+        
+    sys.exit(main())
