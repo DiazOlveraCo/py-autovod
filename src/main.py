@@ -15,7 +15,6 @@ logger.add(
     colorize=True,
 )
 
-
 def main():
     version = settings.config.get("general", "version")
 
