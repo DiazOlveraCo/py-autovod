@@ -3,8 +3,6 @@ import sys
 import argparse
 from loguru import logger
 import settings
-from transcription import process_ts_file, check_dependencies
-
 
 def main():
     # Parse command line arguments
@@ -25,26 +23,20 @@ def main():
         logger.error(f"File is not a .ts file: {args.file}")
         return 1
 
-    # Check dependencies
-    if not check_dependencies():
-        logger.error("Required dependencies not available")
-        logger.error("Please install ffmpeg and vosk: pip install vosk")
-        return 1
-
     model_name = settings.config.get("transcription", "model_name")
 
     # Process the file
     logger.info(f"Transcribing file: {args.file}")
     logger.info(f"Using model: {model_name}")
 
-    success, transcript_path = process_ts_file(args.file, model_name, False)
+    # success, transcript_path = process_ts_file(args.file, model_name, False)
 
-    if success:
-        logger.success(f"Transcription saved to: {transcript_path}")
-        return 0
-    else:
-        logger.error("Transcription failed")
-        return 1
+    # if success:
+    #     logger.success(f"Transcription saved to: {transcript_path}")
+    #     return 0
+    # else:
+    #     logger.error("Transcription failed")
+    #     return 1
 
 
 if __name__ == "__main__":
