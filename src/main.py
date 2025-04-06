@@ -3,18 +3,8 @@
 import os
 import sys
 import argparse
-from loguru import logger
 from settings import config
 from stream_manager import StreamManager
-from streamer_monitor import StreamerMonitor
-
-logger.remove()
-logger.add(
-    sys.stderr,
-    format="<green>[{time:HH:mm:ss}]</green> | <level>{message}</level>",
-    colorize=True,
-)
-
 
 def main():
     version = config.get("general", "version", fallback="1.0.0")

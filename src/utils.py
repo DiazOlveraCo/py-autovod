@@ -1,7 +1,7 @@
 import os
 import subprocess
 from typing import List, Optional, Tuple
-from loguru import logger
+from logger import logger
 import configparser
 
 

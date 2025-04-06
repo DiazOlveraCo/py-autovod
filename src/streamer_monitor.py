@@ -2,7 +2,7 @@ import sys
 import time
 import threading
 import os
-from loguru import logger
+from logger import logger
 from utils import (
     run_command,
     determine_source,
@@ -10,7 +10,6 @@ from utils import (
     fetch_metadata,
     load_config,
 )
-from transcription import process_ts_file
 from settings import config
 
 
@@ -19,7 +18,6 @@ class StreamerMonitor(threading.Thread):
 
     def __init__(self, streamer_name: str, retry_delay: int = 60):
         """
-
         Args:
             streamer_name: The name of the streamer to monitor
             retry_delay: Time in seconds to wait between checks if stream is offline
@@ -109,17 +107,17 @@ class StreamerMonitor(threading.Thread):
                     )
 
                     # Process the file for transcription
-                    try:
-                        transcription_success, transcript_path = process_ts_file(
-                            latest_file, model_name, cleanup_wav
-                        )
+                    # try:
+                    #     transcription_success, transcript_path = process_ts_file(
+                    #         latest_file, model_name, cleanup_wav
+                    #     )
 
-                        if transcription_success:
-                            logger.success(f"Transcription saved to {transcript_path}")
-                        else:
-                            logger.error("Transcription failed")
-                    except Exception as e:
-                        logger.error(f"Error during transcription: {e}")
+                    #     if transcription_success:
+                    #         logger.success(f"Transcription saved to {transcript_path}")
+                    #     else:
+                    #         logger.error("Transcription failed")
+                    # except Exception as e:
+                    #     logger.error(f"Error during transcription: {e}")
                 else:
                     logger.warning(f"No .ts files found in {streamer_dir}")
 

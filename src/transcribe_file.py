@@ -1,7 +1,7 @@
 import os
 import sys
 import argparse
-from loguru import logger
+from logger import logger
 import settings
 
 def main():

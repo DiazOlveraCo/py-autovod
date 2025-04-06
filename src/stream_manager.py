@@ -2,7 +2,7 @@ import sys
 import time
 import signal
 from typing import Dict, List
-from loguru import logger
+from logger import logger
 from streamer_monitor import StreamerMonitor
 import utils
 from settings import config
