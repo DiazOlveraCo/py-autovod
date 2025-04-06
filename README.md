@@ -15,7 +15,7 @@ A Python implementation of [autovod](https://github.com/jenslys/AutoVOD) with so
 
 ## Installation
 
-Manually install ffmpeg, streamlink, jq. Alternatively, you can do the installation automatically with `install.sh`.
+Manually install ffmpeg and streamlink. Alternatively, you can do the installation automatically with `install.sh`.
 
 ## Setup
 
@@ -39,11 +39,8 @@ Run the program:
 
 ## Transcription
 
-Transcription is performed using the [Vosk](https://alphacephei.com/vosk/) speech recognition toolkit.
-
 To use this feature:
-1. Download a Vosk model from [https://alphacephei.com/vosk/models](https://alphacephei.com/vosk/models)
-2. Configure the transcription settings in `config.ini`
+- Configure the transcription settings in `config.ini`
 
 ## Contribution
 

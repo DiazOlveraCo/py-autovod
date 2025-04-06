@@ -6,7 +6,7 @@ from logger import logger
 from settings import config
 from streamer_monitor import StreamerMonitor
 from utils import get_size
-
+from tqdm import tqdm
 
 class StreamManager:
     """Class to manage multiple streamer monitors."""
@@ -48,6 +48,7 @@ class StreamManager:
             logger.warning("Stream manager is already running")
             return
 
+        self.running = True
         streamers: List[str] = []
 
         if streamer_name:
@@ -70,7 +71,6 @@ class StreamManager:
             monitor.start()
             time.sleep(1)
 
-        self.running = True
         logger.success("Stream manager started successfully")
 
     def stop(self) -> None:
@@ -87,8 +87,10 @@ class StreamManager:
         self.monitors.clear()
         self.running = False
 
+
     def list_monitored_streamers(self) -> List[str]:
         return list(self.monitors.keys())
+
 
     def wait(self) -> None:
         recordings_dir = "recordings"
@@ -96,19 +98,23 @@ class StreamManager:
         total = 0
         time.sleep(3)
 
-        try:
-            while self.running:
-                cur_file_size = get_size(recordings_dir)  # in MB
-                speed = cur_file_size - prev_size
-                prev_size = cur_file_size
-                total += speed
-
-                print(
-                    f"\rDownload speed: {speed:.4f} MB/s | Total: {total:.4f} MB ",
-                    end="",
-                    flush=True,
-                )
-                time.sleep(1)
-        except KeyboardInterrupt:
-            logger.info("Keyboard interrupt received, shutting down...")
-            self.stop()
+        with tqdm(
+                desc="Downloading",
+                unit="MB",
+                bar_format="{l_bar}{bar}| {n:.3f}MB ({rate_fmt})",
+                dynamic_ncols=True
+            ) as pbar:
+                try:
+                    while self.running:
+                        cur_size = get_size(recordings_dir)
+                        speed = cur_size - prev_size
+                        prev_size = cur_size
+                        total += speed
+                        
+                        pbar.set_postfix_str(f"{speed:.3f}MB/s")
+                        pbar.n = total  
+                        pbar.refresh()  
+                        time.sleep(1)
+                except KeyboardInterrupt:
+                    pbar.close()
+                    self.stop()

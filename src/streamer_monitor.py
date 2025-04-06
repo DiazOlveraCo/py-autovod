@@ -51,7 +51,7 @@ class StreamerMonitor(threading.Thread):
 
         return True
 
-    def process_video(
+    def download_video(
         self, video_title: Optional[str] = None, video_description: Optional[str] = None
     ) -> bool:
         if not self.config:
@@ -162,22 +162,18 @@ class StreamerMonitor(threading.Thread):
                     video_title = None
                     video_description = None
 
-                    if self.config.getboolean("source", "api_calls", fallback=False):
-                        video_title, video_description = fetch_metadata(
-                            self.config["source"]["api_url"], self.streamer_name
-                        )
+                    # if self.config.getboolean("source", "api_calls", fallback=False):
+                    #     video_title, video_description = fetch_metadata(
+                    #         self.config["source"]["api_url"], self.streamer_name
+                    #     )
 
-                    download_success = self.process_video(
+                    download_success = self.download_video(
                         video_title, video_description
                     )
 
                     if download_success:
                         logger.success(
                             f"Stream for {self.streamer_name} downloaded successfully"
-                        )
-                    else:
-                        logger.warning(
-                            f"Stream download failed for {self.streamer_name}"
                         )
 
                 else:
