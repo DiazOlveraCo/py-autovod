@@ -11,7 +11,7 @@ from utils import (
     load_config,
 )
 from transcription import process_ts_file
-import settings
+from settings import config
 
 
 class StreamerMonitor(threading.Thread):
@@ -77,7 +77,7 @@ class StreamerMonitor(threading.Thread):
         success = result.returncode == 0
 
         # If download was successful and transcription is enabled, process the video for transcription
-        if success and settings.config.getboolean(
+        if success and config.getboolean(
             "transcription", "enabled", fallback=False
         ):
             # Find the most recently downloaded file
@@ -105,8 +105,8 @@ class StreamerMonitor(threading.Thread):
                         stdout=sys.stdout,
                     )
 
-                    model_name = settings.config.get("transcription", "model_name")
-                    cleanup_wav = settings.config.getboolean(
+                    model_name = config.get("transcription", "model_name")
+                    cleanup_wav = config.getboolean(
                         "transcription", "cleanup_wav", fallback=True
                     )
 

@@ -4,7 +4,7 @@ import os
 import sys
 import argparse
 from loguru import logger
-import settings # note that settings are only loaded upon import
+from settings import config
 from stream_manager import StreamManager
 from streamer_monitor import StreamerMonitor
 
@@ -16,7 +16,7 @@ logger.add(
 )
 
 def main():
-    version = settings.config.get("general", "version")
+    version = config.get("general", "version", fallback="1.0.0")
 
     print(f"Starting AutoVOD v{version}")
 

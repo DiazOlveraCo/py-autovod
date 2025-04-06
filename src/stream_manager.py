@@ -4,8 +4,8 @@ import signal
 from typing import Dict, List
 from loguru import logger
 from streamer_monitor import StreamerMonitor
-import settings
 import utils
+from settings import config
 
 
 class StreamManager:
@@ -18,27 +18,24 @@ class StreamManager:
         self.running = False
         self.retry_delay = 120
 
-        if settings.config.has_option("general", "retry_delay"):
-            self.retry_delay = settings.config.getint("general", "retry_delay")
+        if config.has_option("general", "retry_delay"):
+            self.retry_delay = config.getint("general", "retry_delay")
 
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
 
-    def _signal_handler(self, signum):
+    def _signal_handler(self, signum, frame):
         logger.info(f"Received signal {signum}, shutting down...")
         self.stop()
         sys.exit(0)
 
     def get_streamers_list(self) -> List[str]:
         """Get the list of streamers to monitor from the configuration."""
-        if not settings.config:
-            return []
-
-        if not settings.config.has_option("streamers", "streamers"):
+        if not (config or config.has_option("streamers", "streamers")):
             logger.error("No streamers defined in configuration")
             return []
 
-        streamers_str = settings.config.get("streamers", "streamers")
+        streamers_str = config.get("streamers", "streamers")
         return set(
             [s.strip() for s in streamers_str.strip(",").split(",") if s.strip()]
         )
@@ -93,22 +90,18 @@ class StreamManager:
     def wait(self):
         prev_size = utils.get_size("recordings")
         total = 0
-
         time.sleep(3)
-
         try:
             while self.running:
                 cur_file_size = utils.get_size("recordings")  # in MB
                 speed = cur_file_size - prev_size
                 prev_size = cur_file_size
                 total += speed
-
                 print(
                     f"\rDownload speed: {speed:.4f} MB/s | Total: {total:.4f} MB ",
                     end="",
                     flush=True,
                 )
-
                 time.sleep(1)
         except KeyboardInterrupt:
             logger.info("Keyboard interrupt received, shutting down...")
