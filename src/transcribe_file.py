@@ -2,7 +2,7 @@ import os
 import sys
 import argparse
 from loguru import logger
-import settings 
+import settings
 from transcription import process_ts_file, check_dependencies
 
 

@@ -45,7 +45,7 @@ class StreamManager:
             logger.warning("Stream manager is already running")
             return
 
-        streamers : List[str] = []        
+        streamers: List[str] = []
 
         if streamer_name:
             streamers = [streamer_name]

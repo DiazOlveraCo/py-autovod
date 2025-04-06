@@ -77,9 +77,7 @@ class StreamerMonitor(threading.Thread):
         success = result.returncode == 0
 
         # If download was successful and transcription is enabled, process the video for transcription
-        if success and config.getboolean(
-            "transcription", "enabled", fallback=False
-        ):
+        if success and config.getboolean("transcription", "enabled", fallback=False):
             # Find the most recently downloaded file
             streamer_dir = f"recordings/{self.streamer_name}"
             if os.path.exists(streamer_dir):

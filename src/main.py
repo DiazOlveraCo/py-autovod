@@ -15,6 +15,7 @@ logger.add(
     colorize=True,
 )
 
+
 def main():
     version = config.get("general", "version", fallback="1.0.0")
 
@@ -43,14 +44,14 @@ def main():
     if args.version:
         print(f"Version: {version}")
         return
-        
+
     manager = StreamManager()
 
     if args.name:
         manager.start(args.name)
     else:
         manager.start()
-        
+
     manager.wait()
 
 
