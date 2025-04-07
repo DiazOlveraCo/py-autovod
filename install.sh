@@ -31,9 +31,9 @@ $package_manager -qq $update_command && $package_manager -qq $upgrade_command
 printf "${g}[$now] Installing necessary Packages...${c}\n"
 
 # Package names for apt
-apt_packages=(npm wget curl git python3-pip tar jq)
+apt_packages=(python3-pip tar ffmpeg)
 # Package names for DNF
-dnf_packages=(npm wget curl git python3-pip tar jq)
+dnf_packages=(python3-pip tar ffmpeg)
 
 # Use the appropriate package array based on the detected package manager
 if [ "$package_manager" = "apt-get" ]; then
@@ -58,5 +58,3 @@ if ! [ -x "$(command -v streamlink)" ]; then
 else
   printf "${g}[$now] Streamlink is already installed. Skipping...${c}\n"
 fi
-
-# ..
