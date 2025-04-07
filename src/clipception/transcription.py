@@ -5,6 +5,7 @@ except ImportError:
     print("ERROR: PyTorch is required. Please install with:")
     print("pip install torch torchaudio")
     import sys
+
     sys.exit(1)
 
 try:
@@ -172,7 +173,7 @@ def combine_segments(segments):
     }
 
 
-def transcribe_with_features(model, audio_path, device : str, min_duration=15.0):
+def transcribe_with_features(model, audio_path, device: str, min_duration=15.0):
     """Get transcription with timestamps and audio features"""
     print("Generating enhanced transcription...")
     enhanced_segments = []
@@ -184,7 +185,7 @@ def transcribe_with_features(model, audio_path, device : str, min_duration=15.0)
     # Configure FP16 based on CUDA support
     fp16 = device == "cuda" and torch.cuda.is_bf16_supported()
 
-    result = model.transcribe(str(audio_path), language="en", fp16=fp16,)
+    result = model.transcribe(str(audio_path), language="en", fp16=fp16)
 
     current_segments = []
     current_duration = 0.0
@@ -253,12 +254,13 @@ def process_video(video_path, model_size="base"):
 
         # Model loading
         print(f"Loading Whisper {model_size} model...")
-        model = whisper.load_model(model_size, ).to(device)
+        model = whisper.load_model(model_size).to(device)
 
         if device == "cuda":
-            print(f"GPU Memory allocated: {torch.cuda.memory_allocated()/1024**2:.2f} MB")
+            print(
+                f"GPU Memory allocated: {torch.cuda.memory_allocated()/1024**2:.2f} MB"
+            )
             print(f"GPU Memory reserved: {torch.cuda.memory_reserved()/1024**2:.2f} MB")
-
 
         # Transcription
         enhanced_transcription = transcribe_with_features(model, audio_path, device)
