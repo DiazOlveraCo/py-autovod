@@ -19,10 +19,7 @@ def main() -> int:
 
     parser.add_argument("-n", "--name", help="Single streamer name to monitor")
     parser.add_argument(
-        "-v",
-        "--version",
-        action="store_true",
-        help="Display the current version",
+        "-v", "--version", action="store_true", help="Display the current version"
     )
     args = parser.parse_args()
 
