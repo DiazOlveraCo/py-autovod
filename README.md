@@ -2,7 +2,7 @@
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Issues](https://img.shields.io/github/issues/0jc1/py-autovod.svg)](https://github.com/0jc1/py-autovod/issues)
 
-A Python implementation of [autovod](https://github.com/jenslys/AutoVOD) with some extra features.
+A Python implementation of [autovod](https://github.com/jenslys/AutoVOD) with some extra features. 
 
 ## Features
 - ( :heavy_check_mark: ) Auto download livestreams (Twitch.tv, Kick.tv, Youtube Live) from multiple streamers concurrently
@@ -21,6 +21,7 @@ Manually install ffmpeg and streamlink. Alternatively, you can do the installati
 
 Python 3.9+ is required. Install the required dependencies:
    ```bash
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
    pip install -r requirements.txt
    ```
 
@@ -44,3 +45,9 @@ Audio transcription is done with OpenAI's Whisper ASR. This feature can be confi
 ## Contribution
 
 Contributors are welcome! Please feel free to submit a PR or issue.
+
+## Credits
+
+[@jenslys](https://github.com/jenslys) - creating the original [autovod](https://github.com/jenslys/AutoVOD)  
+
+[@msylvester](https://github.com/msylvester) - their work on [clipception](https://github.com/msylvester/Clipception)
