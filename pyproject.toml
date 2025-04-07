@@ -7,3 +7,7 @@ name = "py-autovod"
 version = "1.0.0"
 description = "Automatically download and upload streams in realtime"
 authors = [{name = "Your Name", email = "you@example.com"}]
+
+[tool.black]
+skip-string-normalization = true
+skip-magic-trailing-comma = true

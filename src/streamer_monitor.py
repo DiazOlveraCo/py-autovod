@@ -165,6 +165,11 @@ class StreamerMonitor(threading.Thread):
                     video_title = None
                     video_description = None
 
+                     # if self.config.getboolean("source", "api_calls", fallback=False):
+                    #     video_title, video_description = fetch_metadata(
+                    #         self.config["source"]["api_url"], self.streamer_name
+                    #     )
+
                     download_success = self.download_video(video_title, video_description)
 
                     if download_success:
