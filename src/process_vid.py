@@ -8,7 +8,7 @@ import time
 import glob
 import re
 import shutil
-
+from clipception.transcription import process_video
 
 def run_script(command):
     try:
@@ -34,8 +34,6 @@ def main():
 
     # Step 1: Run enhanced transcription
     print("\nStep 1: Generating enhanced transcription...")
-
-    from clipception.transcription import process_video
 
     process_video(video_path, model_size="base")
 
