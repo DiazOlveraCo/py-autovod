@@ -75,7 +75,9 @@ class StreamerMonitor(threading.Thread):
             command.extend(flags)
 
         try:
-            self.current_process = subprocess.Popen(command, stdout=sys.stdout, stderr=subprocess.DEVNULL)
+            self.current_process = subprocess.Popen(
+                command, stdout=sys.stdout, stderr=subprocess.DEVNULL
+            )
             retcode = self.current_process.wait()  # Wait until the stream ends
             success = retcode == 0
         except Exception as e:

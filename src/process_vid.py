@@ -12,6 +12,7 @@ from clipception.transcription import process_video
 from clipception.gpu_clip import transcribe_clips
 from clipception.clip import process_clips
 
+
 def run_script(command):
     try:
         print(f"Running: {command}")
@@ -51,6 +52,8 @@ def main():
     # Step 2: Generate clips JSON using GPU acceleration
     print("\nStep 2: Processing transcription for clip selection..")
 
+    output_file = os.path.join(output_dir, "top_clips_one.json")
+    transcribe_clips(transcription_json, output_file, num_clips=20, chunk_size=5)
     output_file = os.path.join(output_dir,"top_clips_one.json")
     # TODO write a function to calculate num_clips
     transcribe_clips(transcription_json, output_file, num_clips=10, chunk_size=5)

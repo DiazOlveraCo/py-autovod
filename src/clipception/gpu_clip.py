@@ -225,7 +225,14 @@ def save_top_clips_json(clips: List[Dict], output_file: str, num_clips: int = 20
     except Exception as e:
         raise RuntimeError(f"Failed to save JSON file: {str(e)}")
 
-def transcribe_clips(clips_json, output_file, num_clips : int = 20, chunk_size : int = 5, num_processes=None):
+
+def transcribe_clips(
+    clips_json,
+    output_file,
+    num_clips: int = 20,
+    chunk_size: int = 5,
+    num_processes=None,
+):
     start_time = time.time()
 
     try:
@@ -236,12 +243,13 @@ def transcribe_clips(clips_json, output_file, num_clips : int = 20, chunk_size :
             num_processes,
         )
 
-        save_top_clips_json(ranked_clips,output_file,num_clips)
+        save_top_clips_json(ranked_clips, output_file, num_clips)
 
         print(f"\nSuccessfully saved top {num_clips} clips to {output_file}")
         print(f"Total processing time: {time.time() - start_time:.2f} seconds")
     except Exception as e:
         print(f"Error: {str(e)}")
+
 
 def main():
     parser = argparse.ArgumentParser(
