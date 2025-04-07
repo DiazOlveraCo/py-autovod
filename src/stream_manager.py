@@ -8,6 +8,7 @@ from streamer_monitor import StreamerMonitor
 from utils import get_size
 from tqdm import tqdm
 
+
 class StreamManager:
     """Class to manage multiple streamer monitors."""
 
@@ -87,10 +88,8 @@ class StreamManager:
         self.monitors.clear()
         self.running = False
 
-
     def list_monitored_streamers(self) -> List[str]:
         return list(self.monitors.keys())
-
 
     def wait(self) -> None:
         recordings_dir = "recordings"
@@ -99,22 +98,22 @@ class StreamManager:
         time.sleep(3)
 
         with tqdm(
-                desc="Downloading",
-                unit="MB",
-                bar_format="{l_bar}{bar}| {n:.3f}MB ({rate_fmt})",
-                dynamic_ncols=True
-            ) as pbar:
-                try:
-                    while self.running:
-                        cur_size = get_size(recordings_dir)
-                        speed = cur_size - prev_size
-                        prev_size = cur_size
-                        total += speed
-                        
-                        pbar.set_postfix_str(f"{speed:.3f}MB/s")
-                        pbar.n = total  
-                        pbar.refresh()  
-                        time.sleep(1)
-                except KeyboardInterrupt:
-                    pbar.close()
-                    self.stop()
+            desc="Downloading",
+            unit="MB",
+            bar_format="{l_bar}{bar}| {n:.3f}MB ({rate_fmt})",
+            dynamic_ncols=True,
+        ) as pbar:
+            try:
+                while self.running:
+                    cur_size = get_size(recordings_dir)
+                    speed = cur_size - prev_size
+                    prev_size = cur_size
+                    total += speed
+
+                    pbar.set_postfix_str(f"{speed:.3f}MB/s")
+                    pbar.n = total
+                    pbar.refresh()
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                pbar.close()
+                self.stop()

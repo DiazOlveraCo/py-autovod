@@ -9,6 +9,7 @@ import glob
 import re
 import shutil
 
+
 def run_script(command):
     try:
         print(f"Running: {command}")
@@ -38,21 +39,27 @@ def main():
 
     process_video(video_path, model_size="base")
 
-    transcription_json = os.path.join(output_dir, f"{filename_without_ext}.enhanced_transcription.json")
+    transcription_json = os.path.join(
+        output_dir, f"{filename_without_ext}.enhanced_transcription.json"
+    )
     if not os.path.exists(transcription_json):
-        print(f"Error: Expected transcription file {transcription_json} was not generated")
+        print(
+            f"Error: Expected transcription file {transcription_json} was not generated"
+        )
         sys.exit(1)
 
     return
 
     # Step 2: Generate clips JSON using GPU acceleration
     print("\nStep 2: Processing transcription for clip selection...")
-    cmd2 = (f"python gpu_clip.py {transcription_json} "
-            f"--output_file {os.path.join(output_dir, 'top_clips_one.json')} "
-            f"--site_url 'http://localhost' "
-            f"--site_name 'Local Test' "
-            f"--num_clips 20 "
-            f"--chunk_size 5")
+    cmd2 = (
+        f"python gpu_clip.py {transcription_json} "
+        f"--output_file {os.path.join(output_dir, 'top_clips_one.json')} "
+        f"--site_url 'http://localhost' "
+        f"--site_name 'Local Test' "
+        f"--num_clips 20 "
+        f"--chunk_size 5"
+    )
     if not run_script(cmd2):
         sys.exit(1)
 
@@ -74,6 +81,7 @@ def main():
     print(f"1. Transcription: {transcription_json}")
     print(f"2. Clip selections: {clips_json}")
     print(f"3. Video clips: {clips_output_dir}/")
+
 
 if __name__ == "__main__":
     main()
