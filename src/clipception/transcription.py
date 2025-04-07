@@ -5,7 +5,6 @@ except ImportError:
     print("ERROR: PyTorch is required. Please install with:")
     print("pip install torch torchaudio")
     import sys
-
     sys.exit(1)
 
 try:

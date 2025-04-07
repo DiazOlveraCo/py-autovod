@@ -219,6 +219,8 @@ def save_top_clips_json(
     except Exception as e:
         raise RuntimeError(f"Failed to save JSON file: {str(e)}")
 
+def process_clips():
+    pass
 
 def main():
     parser = argparse.ArgumentParser(

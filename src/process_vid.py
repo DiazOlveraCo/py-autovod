@@ -9,6 +9,7 @@ import glob
 import re
 import shutil
 from clipception.transcription import process_video
+from clipception.gpu_clip import process_clips
 
 def run_script(command):
     try:
@@ -46,25 +47,24 @@ def main():
         )
         sys.exit(1)
 
-    return
-
     # Step 2: Generate clips JSON using GPU acceleration
     print("\nStep 2: Processing transcription for clip selection...")
-    cmd2 = (
-        f"python gpu_clip.py {transcription_json} "
-        f"--output_file {os.path.join(output_dir, 'top_clips_one.json')} "
-        f"--site_url 'http://localhost' "
-        f"--site_name 'Local Test' "
-        f"--num_clips 20 "
-        f"--chunk_size 5"
-    )
-    if not run_script(cmd2):
-        sys.exit(1)
+    # cmd2 = (
+    #     f"python gpu_clip.py {transcription_json} "
+    #     f"--output_file {os.path.join(output_dir, 'top_clips_one.json')} "
+    #     f"--site_url 'http://localhost' "
+    #     f"--site_name 'Local Test' "
+    #     f"--num_clips 20 "
+    #     f"--chunk_size 5"
+    # )
+
 
     clips_json = os.path.join(output_dir, "top_clips_one.json")
     if not os.path.exists(clips_json):
         print(f"Error: Expected top clips file {clips_json} was not generated")
         sys.exit(1)
+
+    return
 
     # Step 3: Extract video clips
     print("\nStep 3: Extracting clips...")
