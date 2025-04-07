@@ -50,10 +50,7 @@ def rank_clips_chunk(
     client = OpenAI(
         base_url="https://openrouter.ai/api/v1",
         api_key=api_key,
-        default_headers={
-            "HTTP-Referer": site_url,
-            "X-Title": site_name,
-        },
+        default_headers={"HTTP-Referer": site_url, "X-Title": site_name},
     )
 
     prompt = f"""You are an expert content analyzer focusing on viral potential. Analyze these clips:

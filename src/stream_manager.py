@@ -85,7 +85,6 @@ class StreamManager:
     def list_monitored_streamers(self) -> List[str]:
         return list(self.monitors.keys())
 
-
     def wait(self) -> None:
         recordings_dir = "recordings"
         prev_size = get_size(recordings_dir)
@@ -95,7 +94,7 @@ class StreamManager:
         with tqdm(
             desc="Downloading",
             unit="MB",
-            bar_format="{l_bar}{bar}| {n:.3f} MB ({postfix})",  
+            bar_format="{l_bar}{bar}| {n:.3f} MB ({postfix})",
             dynamic_ncols=True,
         ) as pbar:
             try:

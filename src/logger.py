@@ -1,10 +1,12 @@
 from loguru import logger
 import sys
 
-DEBUG = True # Debug flag for toggling debug logging
+DEBUG = True  # Debug flag for toggling debug logging
+
 
 def debug_filter(record):
     return DEBUG or record["level"].name != "debug"
+
 
 logger.remove()
 logger.add(

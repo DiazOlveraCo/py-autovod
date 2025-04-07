@@ -53,7 +53,6 @@ class StreamerMonitor(threading.Thread):
 
         return True
 
-
     def download_video(
         self, video_title: Optional[str] = None, video_description: Optional[str] = None
     ) -> bool:
@@ -86,11 +85,12 @@ class StreamerMonitor(threading.Thread):
             self.current_process = None
 
         # If download was successful and transcription is enabled, process the video for transcription
-        if success and self.config.getboolean("transcription", "enabled", fallback=False):
+        if success and self.config.getboolean(
+            "transcription", "enabled", fallback=False
+        ):
             self._process_transcription()
 
         return success
-
 
     def _process_transcription(self) -> None:
         """Process the latest downloaded file for transcription."""
@@ -114,21 +114,13 @@ class StreamerMonitor(threading.Thread):
 
         mp4_file = latest_file.replace(".ts", ".mp4")
         convert_result = subprocess.run(
-            [
-                "ffmpeg",
-                "-i",
-                latest_file,
-                "-c",
-                "copy",
-                mp4_file,
-            ],
-            stdout=sys.stdout,
+            ["ffmpeg", "-i", latest_file, "-c", "copy", mp4_file], stdout=sys.stdout
         )
 
         if convert_result.returncode != 0:
             logger.error(f"Failed to convert {latest_file} to MP4")
             return
-        
+
         # model_name = config.get("transcription", "model_name")
         # cleanup_wav = config.getboolean(
         #     "transcription", "cleanup_wav", fallback=True
@@ -147,7 +139,6 @@ class StreamerMonitor(threading.Thread):
         # except Exception as e:
         #     logger.error(f"Error during transcription: {e}")
 
-
     def run(self) -> None:
         if not self.config or not self.stream_source_url:
             logger.error(
@@ -165,12 +156,14 @@ class StreamerMonitor(threading.Thread):
                     video_title = None
                     video_description = None
 
-                     # if self.config.getboolean("source", "api_calls", fallback=False):
+                    # if self.config.getboolean("source", "api_calls", fallback=False):
                     #     video_title, video_description = fetch_metadata(
                     #         self.config["source"]["api_url"], self.streamer_name
                     #     )
 
-                    download_success = self.download_video(video_title, video_description)
+                    download_success = self.download_video(
+                        video_title, video_description
+                    )
 
                     if download_success:
                         logger.success(
@@ -184,7 +177,6 @@ class StreamerMonitor(threading.Thread):
                 logger.error(f"Error monitoring {self.streamer_name}: {e}")
 
             time.sleep(self.retry_delay)
-
 
     def stop(self) -> None:
         self.running = False
