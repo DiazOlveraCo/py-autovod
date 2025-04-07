@@ -2,6 +2,7 @@ import sys
 import time
 import threading
 import os
+import subprocess
 from typing import Optional
 from logger import logger
 from settings import config
@@ -24,6 +25,7 @@ class StreamerMonitor(threading.Thread):
         self.running = False
         self.config = None
         self.stream_source_url = None
+        self.current_process = None  # Store the running streamlink subprocess
 
         self._load_configuration()
 
@@ -51,6 +53,7 @@ class StreamerMonitor(threading.Thread):
 
         return True
 
+
     def download_video(
         self, video_title: Optional[str] = None, video_description: Optional[str] = None
     ) -> bool:
@@ -72,23 +75,25 @@ class StreamerMonitor(threading.Thread):
             flags = [flag.strip() for flag in flags if flag.strip()]
             command.extend(flags)
 
-        result = run_command(
-            command,
-            stdout=sys.stdout,
-        )
-
-        # streamlink returns when stream ends
-        success = result.returncode == 0
+        try:
+            self.current_process = subprocess.Popen(command, stdout=sys.stdout)
+            retcode = self.current_process.wait()  # Wait until the stream ends
+            success = retcode == 0
+        except Exception as e:
+            logger.error(f"Error running streamlink: {e}")
+            success = False
+        finally:
+            self.current_process = None
 
         # If download was successful and transcription is enabled, process the video for transcription
-        if success and config.getboolean("transcription", "enabled", fallback=False):
+        if success and self.config.getboolean("transcription", "enabled", fallback=False):
             self._process_transcription()
 
         return success
 
+
     def _process_transcription(self) -> None:
         """Process the latest downloaded file for transcription."""
-        # Find the most recently downloaded file
         streamer_dir = f"recordings/{self.streamer_name}"
         if not os.path.exists(streamer_dir):
             logger.warning(f"Directory not found: {streamer_dir}")
@@ -104,13 +109,11 @@ class StreamerMonitor(threading.Thread):
             logger.warning(f"No .ts files found in {streamer_dir}")
             return
 
-        # Sort by modification time, newest first
         latest_file = max(files, key=os.path.getmtime)
         logger.info(f"Found latest recording: {latest_file}")
 
-        # Convert to MP4
         mp4_file = latest_file.replace(".ts", ".mp4")
-        convert_result = run_command(
+        convert_result = subprocess.run(
             [
                 "ffmpeg",
                 "-i",
@@ -125,7 +128,7 @@ class StreamerMonitor(threading.Thread):
         if convert_result.returncode != 0:
             logger.error(f"Failed to convert {latest_file} to MP4")
             return
-
+        
         # model_name = config.get("transcription", "model_name")
         # cleanup_wav = config.getboolean(
         #     "transcription", "cleanup_wav", fallback=True
@@ -144,6 +147,7 @@ class StreamerMonitor(threading.Thread):
         # except Exception as e:
         #     logger.error(f"Error during transcription: {e}")
 
+
     def run(self) -> None:
         if not self.config or not self.stream_source_url:
             logger.error(
@@ -158,34 +162,35 @@ class StreamerMonitor(threading.Thread):
             try:
                 if check_stream_live(self.stream_source_url):
                     logger.info(f"{self.streamer_name} is live")
-
                     video_title = None
                     video_description = None
 
-                    # if self.config.getboolean("source", "api_calls", fallback=False):
-                    #     video_title, video_description = fetch_metadata(
-                    #         self.config["source"]["api_url"], self.streamer_name
-                    #     )
-
-                    download_success = self.download_video(
-                        video_title, video_description
-                    )
+                    download_success = self.download_video(video_title, video_description)
 
                     if download_success:
                         logger.success(
                             f"Stream for {self.streamer_name} downloaded successfully"
                         )
-
                 else:
                     logger.info(
                         f"{self.streamer_name} is offline. Retrying in {self.retry_delay} seconds..."
                     )
-
             except Exception as e:
                 logger.error(f"Error monitoring {self.streamer_name}: {e}")
 
             time.sleep(self.retry_delay)
 
+
     def stop(self) -> None:
         self.running = False
-        logger.info(f"Stopped monitoring {self.streamer_name}")
+        # If a streamlink process is running, terminate it.
+        if self.current_process is not None:
+            logger.debug(f"Terminating streamlink process for {self.streamer_name}")
+            self.current_process.terminate()
+            try:
+                self.current_process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                logger.debug("Process did not terminate in time; killing it")
+                self.current_process.kill()
+            self.current_process = None
+        logger.debug(f"Stopped monitoring {self.streamer_name}")

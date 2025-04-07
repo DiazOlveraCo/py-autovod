@@ -13,7 +13,6 @@ class StreamManager:
     """Class to manage multiple streamer monitors."""
 
     def __init__(self):
-        """Initialize the stream manager."""
         self.monitors: Dict[str, StreamerMonitor] = {}
         self.running = False
 
@@ -29,11 +28,7 @@ class StreamManager:
 
     def get_streamers_list(self) -> List[str]:
         if not config or not config.has_section("streamers"):
-            logger.error("No streamers section in configuration")
-            return []
-
-        if not config.has_option("streamers", "streamers"):
-            logger.error("No streamers defined in configuration")
+            logger.warning("No streamers section in configuration")
             return []
 
         streamers_str = config.get("streamers", "streamers", fallback="")
@@ -57,7 +52,7 @@ class StreamManager:
         else:
             streamers = self.get_streamers_list()
             if not streamers:
-                logger.error("No streamers to monitor")
+                logger.warning("No streamers to monitor")
                 return
 
         logger.info(
