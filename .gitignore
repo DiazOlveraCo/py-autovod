@@ -70,6 +70,7 @@ lib64
 # Media files
 *.ts 
 *.wav
+/recordings
 
 # Log files
 *.log
