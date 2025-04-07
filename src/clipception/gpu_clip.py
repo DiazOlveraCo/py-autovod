@@ -33,7 +33,6 @@ def process_chunk_gpu(chunk_data: Tuple[List[Dict], str, str, str, int]) -> List
     clips, api_key, site_url, site_name, chunk_id = chunk_data
 
     try:
-
         ranked_results = rank_clips_chunk(clips, api_key, site_url, site_name)
         if ranked_results:
             parsed_chunk = parse_clip_data(ranked_results)
@@ -219,8 +218,32 @@ def save_top_clips_json(
     except Exception as e:
         raise RuntimeError(f"Failed to save JSON file: {str(e)}")
 
-def process_clips():
-    pass
+def transcribe_clips(clips_json, output_file, num_clips : int = 20, chunk_size : int = 5, num_processes=None):
+    start_time = time.time()
+    site_url="http://localhost"
+    site_name="Local Test"
+
+    try:
+        api_key = os.getenv("OPEN_ROUTER_KEY")
+        if not api_key:
+            raise ValueError("Please set the OPEN_ROUTER_KEY environment variable")
+
+        clips = (clips_json)
+        ranked_clips = rank_all_clips_parallel(
+            clips,
+            api_key,
+            site_url,
+            site_name,
+            chunk_size,
+            num_processes,
+        )
+
+        save_top_clips_json(ranked_clips,output_file,num_clips)
+
+        print(f"\nSuccessfully saved top {num_clips} clips to {output_file}")
+        print(f"Total processing time: {time.time() - start_time:.2f} seconds")
+    except Exception as e:
+        print(f"Error: {str(e)}")
 
 def main():
     parser = argparse.ArgumentParser(

@@ -75,7 +75,7 @@ class StreamerMonitor(threading.Thread):
             command.extend(flags)
 
         try:
-            self.current_process = subprocess.Popen(command, stdout=sys.stdout)
+            self.current_process = subprocess.Popen(command, stdout=sys.stdout, stderr=subprocess.DEVNULL)
             retcode = self.current_process.wait()  # Wait until the stream ends
             success = retcode == 0
         except Exception as e:
@@ -108,36 +108,6 @@ class StreamerMonitor(threading.Thread):
         if not files:
             logger.warning(f"No .ts files found in {streamer_dir}")
             return
-
-        latest_file = max(files, key=os.path.getmtime)
-        logger.info(f"Found latest recording: {latest_file}")
-
-        mp4_file = latest_file.replace(".ts", ".mp4")
-        convert_result = subprocess.run(
-            ["ffmpeg", "-i", latest_file, "-c", "copy", mp4_file], stdout=sys.stdout
-        )
-
-        if convert_result.returncode != 0:
-            logger.error(f"Failed to convert {latest_file} to MP4")
-            return
-
-        # model_name = config.get("transcription", "model_name")
-        # cleanup_wav = config.getboolean(
-        #     "transcription", "cleanup_wav", fallback=True
-        # )
-
-        # Process the file for transcription (commented out as in original)
-        # try:
-        #     transcription_success, transcript_path = process_ts_file(
-        #         latest_file, model_name, cleanup_wav
-        #     )
-        #
-        #     if transcription_success:
-        #         logger.success(f"Transcription saved to {transcript_path}")
-        #     else:
-        #         logger.error("Transcription failed")
-        # except Exception as e:
-        #     logger.error(f"Error during transcription: {e}")
 
     def run(self) -> None:
         if not self.config or not self.stream_source_url:

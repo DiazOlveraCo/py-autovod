@@ -9,7 +9,8 @@ import glob
 import re
 import shutil
 from clipception.transcription import process_video
-from clipception.gpu_clip import process_clips
+from clipception.gpu_clip import transcribe_clips
+from clipception.clip import process_clips
 
 def run_script(command):
     try:
@@ -36,7 +37,7 @@ def main():
     # Step 1: Run enhanced transcription
     print("\nStep 1: Generating enhanced transcription...")
 
-    process_video(video_path, model_size="base")
+    process_video(video_path, model_size="tiny")
 
     transcription_json = os.path.join(
         output_dir, f"{filename_without_ext}.enhanced_transcription.json"
@@ -49,35 +50,25 @@ def main():
 
     # Step 2: Generate clips JSON using GPU acceleration
     print("\nStep 2: Processing transcription for clip selection...")
-    # cmd2 = (
-    #     f"python gpu_clip.py {transcription_json} "
-    #     f"--output_file {os.path.join(output_dir, 'top_clips_one.json')} "
-    #     f"--site_url 'http://localhost' "
-    #     f"--site_name 'Local Test' "
-    #     f"--num_clips 20 "
-    #     f"--chunk_size 5"
-    # )
 
+    output_file = os.path.join(output_dir,"top_clips_one.json")
+    transcribe_clips(transcription_json, output_file, num_clips=20, chunk_size=5)
 
-    clips_json = os.path.join(output_dir, "top_clips_one.json")
-    if not os.path.exists(clips_json):
-        print(f"Error: Expected top clips file {clips_json} was not generated")
+    if not os.path.exists(output_file):
+        print(f"Error: Top clips file {output_file} was not generated")
         sys.exit(1)
-
-    return
 
     # Step 3: Extract video clips
     print("\nStep 3: Extracting clips...")
     clips_output_dir = os.path.join(output_dir, "clips")
     os.makedirs(clips_output_dir, exist_ok=True)
-    cmd3 = f"python clip.py {video_path} {clips_output_dir} {clips_json}"
-    if not run_script(cmd3):
-        sys.exit(1)
+
+    process_clips(video_path, clips_output_dir, output_dir, min_score=0)
 
     print("\nAll processing completed successfully!")
     print(f"Generated files:")
     print(f"1. Transcription: {transcription_json}")
-    print(f"2. Clip selections: {clips_json}")
+    print(f"2. Clip selections: {output_file}")
     print(f"3. Video clips: {clips_output_dir}/")
 
 
