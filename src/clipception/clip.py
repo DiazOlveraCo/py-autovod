@@ -1,7 +1,6 @@
 from moviepy import VideoFileClip
 import argparse
 import json
-import sys
 import os
 from datetime import datetime
 
@@ -40,53 +39,51 @@ def process_clips(input_file, output_dir, json_file, min_score=0):
     """
     Process all clips from the JSON file that meet the minimum score requirement
     """
-    try:
-        # Create output directory if it doesn't exist
-        os.makedirs(output_dir, exist_ok=True)
 
-        # Read and parse JSON data
-        with open(json_file, "r") as f:
-            data = json.load(f)
+    # Create output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
 
-        # Process each clip that meets the score threshold
-        successful_clips = []
-        failed_clips = []
+    # Read and parse JSON data
+    with open(json_file, "r") as f:
+        data = json.load(f)
+        print(data)
 
-        for clip in data["top_clips"]:
-            if clip["score"] >= min_score:
-                success, result = extract_clip(input_file, output_dir, clip)
-                if success:
-                    successful_clips.append((clip["name"], result))
-                else:
-                    failed_clips.append((clip["name"], result))
+    # Process each clip that meets the score threshold
+    successful_clips = []
+    failed_clips = []
 
-        # Print summary
-        print(f"\nExtraction Summary:")
-        print(f"Total clips processed: {len(successful_clips) + len(failed_clips)}")
-        print(f"Successfully extracted: {len(successful_clips)}")
-        print(f"Failed extractions: {len(failed_clips)}")
-        remove_vod = False
+    for clip in data["top_clips"]:
+        if clip["score"] >= min_score:
+            success, result = extract_clip(input_file, output_dir, clip)
+            if success:
+                successful_clips.append((clip["name"], result))
+            else:
+                failed_clips.append((clip["name"], result))
 
-        if successful_clips:
-            print("\nSuccessful clips:")
-            for name, path in successful_clips:
-                print(f"- {name}: {path}")
+    # Print summary
+    print(f"\nExtraction Summary:")
+    print(f"Total clips processed: {len(successful_clips) + len(failed_clips)}")
+    print(f"Successfully extracted: {len(successful_clips)}")
+    print(f"Failed extractions: {len(failed_clips)}")
+    remove_vod = False
 
-        if failed_clips:
-            print("\nFailed clips:")
-            for name, error in failed_clips:
-                print(f"- {name}: {error}")
-        if successful_clips:
-            try:
-                os.remove(input_file)
-                print(f"\nOriginal VOD file removed: {input_file}")
-            except Exception as e:
-                print(f"\nFailed to remove VOD file: {str(e)}")
-        elif remove_vod and failed_clips:
-            print(f"\nVOD file not removed due to failed clip extractions.")
-    except Exception as e:
-        print(f"An error occurred during processing: {str(e)}")
-        sys.exit(1)
+    if successful_clips:
+        print("\nSuccessful clips:")
+        for name, path in successful_clips:
+            print(f"- {name}: {path}")
+
+    if failed_clips:
+        print("\nFailed clips:")
+        for name, error in failed_clips:
+            print(f"- {name}: {error}")
+    if successful_clips:
+        try:
+            os.remove(input_file)
+            print(f"\nOriginal VOD file removed: {input_file}")
+        except Exception as e:
+            print(f"\nFailed to remove VOD file: {str(e)}")
+    elif remove_vod and failed_clips:
+        print(f"\nVOD file not removed due to failed clip extractions.")
 
 
 def main():

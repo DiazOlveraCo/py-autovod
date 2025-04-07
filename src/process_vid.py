@@ -35,9 +35,9 @@ def main():
     output_dir = os.path.dirname(video_path)
 
     # Step 1: Run enhanced transcription
-    print("\nStep 1: Generating enhanced transcription...")
+    print("\nStep 1: Generating enhanced transcription..")
 
-    process_video(video_path, model_size="tiny")
+    # process_video(video_path, model_size="tiny")
 
     transcription_json = os.path.join(
         output_dir, f"{filename_without_ext}.enhanced_transcription.json"
@@ -49,21 +49,21 @@ def main():
         sys.exit(1)
 
     # Step 2: Generate clips JSON using GPU acceleration
-    print("\nStep 2: Processing transcription for clip selection...")
+    print("\nStep 2: Processing transcription for clip selection..")
 
     output_file = os.path.join(output_dir,"top_clips_one.json")
-    transcribe_clips(transcription_json, output_file, num_clips=20, chunk_size=5)
+    # TODO write a function to calculate num_clips
+    transcribe_clips(transcription_json, output_file, num_clips=10, chunk_size=5)
 
     if not os.path.exists(output_file):
         print(f"Error: Top clips file {output_file} was not generated")
         sys.exit(1)
 
     # Step 3: Extract video clips
-    print("\nStep 3: Extracting clips...")
+    print("\nStep 3: Extracting clips..")
     clips_output_dir = os.path.join(output_dir, "clips")
-    os.makedirs(clips_output_dir, exist_ok=True)
 
-    process_clips(video_path, clips_output_dir, output_dir, min_score=0)
+    process_clips(video_path, clips_output_dir, output_file, min_score=0)
 
     print("\nAll processing completed successfully!")
     print(f"Generated files:")
