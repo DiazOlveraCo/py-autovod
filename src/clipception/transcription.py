@@ -254,7 +254,6 @@ def process_video(video_path, model_size="base"):
 
         # Model loading
         print(f"Loading Whisper {model_size} model...")
-        # "tiny", "base", "small", "medium", "large"
         model = whisper.load_model(model_size, ).to(device)
 
         if device == "cuda":
