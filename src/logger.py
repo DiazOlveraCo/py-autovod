@@ -15,7 +15,7 @@ logger.add(
 )
 
 # logger.add(
-#     log_file,
+#     "app.log",
 #     rotation="10 MB",
 #     retention="1 week",
 #     format="[{time:YYYY-MM-DD HH:mm:ss}] | {level} | {message}",

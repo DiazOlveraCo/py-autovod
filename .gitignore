@@ -67,12 +67,13 @@ lib64
 !config.ini
 !default.ini
 
-# Vosk models
-/models
-
 # Media files
 *.ts 
 *.wav
+
+# Log files
+*.log
+
 
 
 

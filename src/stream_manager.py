@@ -70,7 +70,6 @@ class StreamManager:
             self.monitors[name] = monitor
             monitor.daemon = True  # Set as daemon so they exit when main thread exits
             monitor.start()
-            time.sleep(1)
 
         logger.success("Stream manager started successfully")
 
@@ -91,6 +90,7 @@ class StreamManager:
     def list_monitored_streamers(self) -> List[str]:
         return list(self.monitors.keys())
 
+
     def wait(self) -> None:
         recordings_dir = "recordings"
         prev_size = get_size(recordings_dir)
@@ -100,7 +100,7 @@ class StreamManager:
         with tqdm(
             desc="Downloading",
             unit="MB",
-            bar_format="{l_bar}{bar}| {n:.3f}MB ({rate_fmt})",
+            bar_format="{l_bar}{bar}| {n:.3f} MB ({postfix})",  
             dynamic_ncols=True,
         ) as pbar:
             try:
@@ -110,6 +110,7 @@ class StreamManager:
                     prev_size = cur_size
                     total += speed
 
+                    # Set postfix to current speed
                     pbar.set_postfix_str(f"{speed:.3f}MB/s")
                     pbar.n = total
                     pbar.refresh()
