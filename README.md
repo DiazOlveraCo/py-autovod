@@ -39,8 +39,7 @@ Run the program:
 
 ## Transcription
 
-To use this feature:
-- Configure the transcription settings in `config.ini`
+Audio transcription is done with OpenAI's Whisper ASR. This feature can be configured in `config.ini`
 
 ## Contribution
 
