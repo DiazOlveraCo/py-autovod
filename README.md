@@ -21,7 +21,6 @@ Manually install ffmpeg and streamlink. Alternatively, you can do the installati
 
 Python 3.9+ is required. Install the required dependencies:
    ```bash
-   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
    pip install -r requirements.txt
    ```
 
