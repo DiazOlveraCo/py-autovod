@@ -13,23 +13,14 @@ from clipception.gpu_clip import transcribe_clips
 from clipception.clip import process_clips
 
 
-def run_script(command):
-    try:
-        print(f"Running: {command}")
-        process = subprocess.run(command, check=True, shell=True)
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"Error running command: {command}")
-        print(f"Error: {str(e)}")
-        return False
-
-
 def main():
     # Check for OpenRouter API key
     if not os.getenv("OPEN_ROUTER_KEY"):
         print("Error: OPEN_ROUTER_KEY environment variable is not set")
         print("Please set it with: export OPEN_ROUTER_KEY='your_key_here'")
         sys.exit(1)
+
+    print("ok")
 
     video_path = sys.argv[1]
     filename_without_ext = os.path.splitext(os.path.basename(video_path))[0]
@@ -38,7 +29,7 @@ def main():
     # Step 1: Run enhanced transcription
     print("\nStep 1: Generating enhanced transcription..")
 
-    # process_video(video_path, model_size="tiny")
+    process_video(video_path, model_size="tiny")
 
     transcription_json = os.path.join(
         output_dir, f"{filename_without_ext}.enhanced_transcription.json"
@@ -52,8 +43,7 @@ def main():
     # Step 2: Generate clips JSON using GPU acceleration
     print("\nStep 2: Processing transcription for clip selection..")
 
-    output_file = os.path.join(output_dir, "top_clips_one.json")
-    transcribe_clips(transcription_json, output_file, num_clips=20, chunk_size=5)
+
     output_file = os.path.join(output_dir,"top_clips_one.json")
     # TODO write a function to calculate num_clips
     transcribe_clips(transcription_json, output_file, num_clips=10, chunk_size=5)

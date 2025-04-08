@@ -106,7 +106,7 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
                     {"role": "user", "content": prompt},
                 ],
                 temperature=0.6,
-                max_tokens=2000,
+                max_tokens=1000,
             )
 
             if completion and completion.choices:
