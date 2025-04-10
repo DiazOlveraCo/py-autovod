@@ -96,20 +96,7 @@ class StreamerMonitor(threading.Thread):
 
     def _process_transcription(self) -> None:
         """Process the latest downloaded file for transcription."""
-        streamer_dir = f"recordings/{self.streamer_name}"
-        if not os.path.exists(streamer_dir):
-            logger.warning(f"Directory not found: {streamer_dir}")
-            return
-
-        files = [
-            os.path.join(streamer_dir, f)
-            for f in os.listdir(streamer_dir)
-            if f.endswith(".ts")
-        ]
-
-        if not files:
-            logger.warning(f"No .ts files found in {streamer_dir}")
-            return
+        pass
 
     def run(self) -> None:
         if not self.config or not self.stream_source_url:
