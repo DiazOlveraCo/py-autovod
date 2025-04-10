@@ -90,25 +90,38 @@ class StreamManager:
         prev_size = get_size(recordings_dir)
         total = 0
         time.sleep(3)
-
-        with tqdm(
-            desc="Downloading",
-            unit="MB",
-            bar_format="{l_bar}{bar}| {n:.3f} MB ({postfix})",
-            dynamic_ncols=True,
-        ) as pbar:
-            try:
-                while self.running:
-                    cur_size = get_size(recordings_dir)
-                    speed = cur_size - prev_size
-                    prev_size = cur_size
-                    total += speed
-
-                    # Set postfix to current speed
+        
+        pbar = None
+        try:
+            while self.running:
+                cur_size = get_size(recordings_dir)
+                speed = cur_size - prev_size
+                prev_size = cur_size
+                total += speed
+                
+                # Only show progress bar if there's an active download
+                if speed > 0:
+                    # Initialize progress bar if it doesn't exist
+                    if pbar is None:
+                        pbar = tqdm(
+                            desc="Downloading",
+                            unit="MB",
+                            bar_format="{l_bar}{bar}| {n:.3f} MB ({postfix})",
+                            dynamic_ncols=True,
+                        )
+                        pbar.n = total
+                    
+                    # Update progress bar
                     pbar.set_postfix_str(f"{speed:.3f}MB/s")
                     pbar.n = total
                     pbar.refresh()
-                    time.sleep(1)
-            except KeyboardInterrupt:
+                elif pbar is not None:
+                    # Close progress bar when download stops
+                    pbar.close()
+                    pbar = None
+                
+                time.sleep(1)
+        except KeyboardInterrupt:
+            if pbar is not None:
                 pbar.close()
-                self.stop()
+            self.stop()
