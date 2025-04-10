@@ -5,6 +5,6 @@ openai==1.71.0
 openai-whisper @ git+https://github.com/openai/whisper.git@517a43ecd132a2089d85f4ebc044728a71d49f6e
 requests==2.32.3
 torch==2.6.0
-torchaudio==2.6.0+cu118
-torchvision==0.21.0+cu118
+torchaudio
+torchvision
 tqdm==4.67.1
