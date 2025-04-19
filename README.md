@@ -30,7 +30,7 @@ Manually install ffmpeg and streamlink. Alternatively, you can do the installati
    streamers = streamer1, streamer2, streamer3
    ```
 
-Create a configuration file for each streamer where the file name is the streamer's username.
+Create a configuration file for each streamer where the file name is the streamer's username. The default configuration file will be used otherwise.
 
 3. Copy the `.env.example` file to a new file called `.env`. Fill in the .env file with your API keys.
 
