@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "py-autovod"
 version = "1.0.0"
 description = "Automatically download and upload streams in realtime"
-authors = [{name = "0jc1", email = "you@example.com"}]
+authors = [{name = "0jc1", email = "52017130+0jc1@users.noreply.github.com"}]
 
 [tool.black]
 skip-magic-trailing-comma = true
