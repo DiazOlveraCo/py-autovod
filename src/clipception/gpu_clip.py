@@ -92,7 +92,7 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
 
     max_retries = 4
     retry_delay = 2
-    model_name = "deepseek/deepseek-chat" # "gpt-4-turbo-preview"
+    model_name = "deepseek/deepseek-chat"  # "gpt-4-turbo-preview"
 
     for attempt in range(max_retries):
         try:
@@ -127,15 +127,15 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
     return None
 
 
-def rank_all_clips_parallel(clips: List[Dict], chunk_size: int = 5,num_processes: int = None,) -> List[Dict]:
+def rank_all_clips_parallel(
+    clips: List[Dict], chunk_size: int = 5, num_processes: int = None
+) -> List[Dict]:
     """Rank clips in parallel using multiple processes and GPU acceleration."""
     if num_processes is None:
         num_processes = mp.cpu_count()
 
     chunks = chunk_list(clips, chunk_size)
-    chunk_data = [
-        (chunk, i) for i, chunk in enumerate(chunks)
-    ]
+    chunk_data = [(chunk, i) for i, chunk in enumerate(chunks)]
 
     all_ranked_clips = []
 
@@ -166,7 +166,7 @@ def parse_clip_data(input_string: str) -> list[dict]:
 
     clips = []
     current_clip = {}
-    lines : list[str] = input_string.split("\n")
+    lines: list[str] = input_string.split("\n")
 
     for i in range(len(lines)):
         line = lines[i].strip()
@@ -211,7 +211,9 @@ def parse_clip_data(input_string: str) -> list[dict]:
     return clips
 
 
-def save_top_clips_json(clips: List[Dict], output_file: str, num_clips: int = 20) -> None:
+def save_top_clips_json(
+    clips: List[Dict], output_file: str, num_clips: int = 20
+) -> None:
     top_clips = clips[:num_clips]
     output_data = {
         "top_clips": top_clips,
@@ -236,12 +238,8 @@ def transcribe_clips(
     start_time = time.time()
 
     try:
-        clips = (clips_json)
-        ranked_clips = rank_all_clips_parallel(
-            clips,
-            chunk_size,
-            num_processes,
-        )
+        clips = clips_json
+        ranked_clips = rank_all_clips_parallel(clips, chunk_size, num_processes)
 
         save_top_clips_json(ranked_clips, output_file, num_clips)
 
@@ -283,9 +281,7 @@ def main():
     try:
         clips = load_clips(args.clips_json)
         ranked_clips = rank_all_clips_parallel(
-            clips,
-            args.chunk_size,
-            args.num_processes,
+            clips, args.chunk_size, args.num_processes
         )
 
         save_top_clips_json(ranked_clips, args.output_file, args.num_clips)

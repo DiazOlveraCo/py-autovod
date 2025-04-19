@@ -90,7 +90,7 @@ class StreamManager:
         prev_size = get_size(recordings_dir)
         total = 0
         time.sleep(3)
-        
+
         pbar = None
         try:
             while self.running:
@@ -98,7 +98,7 @@ class StreamManager:
                 speed = cur_size - prev_size
                 prev_size = cur_size
                 total += speed
-                
+
                 # Only show progress bar if there's an active download
                 if speed > 0:
                     # Initialize progress bar if it doesn't exist
@@ -110,7 +110,7 @@ class StreamManager:
                             dynamic_ncols=True,
                         )
                         pbar.n = total
-                    
+
                     # Update progress bar
                     pbar.set_postfix_str(f"{speed:.3f}MB/s")
                     pbar.n = total
@@ -119,7 +119,7 @@ class StreamManager:
                     # Close progress bar when download stops
                     pbar.close()
                     pbar = None
-                
+
                 time.sleep(1)
         except KeyboardInterrupt:
             if pbar is not None:
