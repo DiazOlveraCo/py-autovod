@@ -1,4 +1,3 @@
-
 import os
 import sys
 from pathlib import Path
@@ -72,7 +71,7 @@ def main():
 
     from clipception.clip import process_clips
 
-    process_clips(video_path, clips_output_dir, output_file, min_score = 1 )
+    process_clips(video_path, clips_output_dir, output_file, min_score = min_score)
 
     print("\nAll processing completed successfully! Generated files:")
     print(f"1. Transcription: {transcription_json}")

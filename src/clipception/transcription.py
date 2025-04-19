@@ -229,15 +229,16 @@ def transcribe_with_features(model, audio_path, device: str, min_duration=15.0):
 
 def cleanup_files():
     """Clean up temporary files created during processing"""
-    global files_to_cleanup
-    print("\nCleaning up temporary files...")
-    for file_path in files_to_cleanup:
-        try:
-            if os.path.exists(file_path):
-                os.unlink(file_path)
-                print(f"Removed file: {file_path}")
-        except Exception as e:
-            print(f"Warning: Failed to remove {file_path}: {e}")
+    pass
+    # global files_to_cleanup
+    # print("\nCleaning up temporary files...")
+    # for file_path in files_to_cleanup:
+    #     try:
+    #         if os.path.exists(file_path):
+    #             os.unlink(file_path)
+    #             print(f"Removed file: {file_path}")
+    #     except Exception as e:
+    #         print(f"Warning: Failed to remove {file_path}: {e}")
 
 
 def process_video(video_path, model_size="base"):
@@ -288,12 +289,12 @@ def process_video(video_path, model_size="base"):
         # Cleanup operations
         if device == "cuda":
             torch.cuda.empty_cache()
-        # cleanup_files()
+        cleanup_files()
 
 
 if __name__ == "__main__":
     # Register cleanup handler
-    # atexit.register(cleanup_files)
+    atexit.register(cleanup_files)
 
     # Set up argument parsing
     parser = argparse.ArgumentParser(

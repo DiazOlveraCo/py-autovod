@@ -1,16 +1,12 @@
 import sys
 import time
 import threading
-import os
 import subprocess
 from typing import Optional
 from logger import logger
-from settings import config
 from utils import (
-    run_command,
     determine_source,
     check_stream_live,
-    fetch_metadata,
     load_config,
 )
 
@@ -139,12 +135,11 @@ class StreamerMonitor(threading.Thread):
 
     def stop(self) -> None:
         self.running = False
-        # If a streamlink process is running, terminate it.
         if self.current_process is not None:
             logger.debug(f"Terminating streamlink process for {self.streamer_name}")
             self.current_process.terminate()
             try:
-                self.current_process.wait(timeout=10)
+                self.current_process.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 logger.debug("Process did not terminate in time; killing it")
                 self.current_process.kill()
