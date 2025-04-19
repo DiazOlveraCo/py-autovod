@@ -55,7 +55,7 @@ def main():
     # Step 2: Generate clips JSON using GPU acceleration
     print("\nStep 2: Processing transcription for clip selection..")
 
-    output_file = os.path.join(output_dir,"top_clips_one.json")
+    output_file = os.path.join(output_dir, "top_clips_one.json")
     # TODO write a function to calculate num_clips
 
     from clipception.gpu_clip import transcribe_clips
