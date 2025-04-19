@@ -19,12 +19,12 @@ Manually install ffmpeg and streamlink. Alternatively, you can do the installati
 
 ## Setup
 
-Python 3.9+ is required. Install the required dependencies:
+1. Python 3.9+ is required. Install the required Python packages:
    ```bash
    pip install -r requirements.txt
    ```
 
-Configure the streamers you want to monitor in `config.ini`:
+2. Configure the streamers you want to monitor in `config.ini`:
    ```ini
    [streamers]
    streamers = streamer1, streamer2, streamer3
@@ -32,7 +32,9 @@ Configure the streamers you want to monitor in `config.ini`:
 
 Create a configuration file for each streamer where the file name is the streamer's username.
 
-Run the program:
+3. Copy the `.env.example` file to a new file called `.env`. Fill in the .env file with your API keys.
+
+4. Run the program:
    ```bash
    python3 src/main.py
    ```
