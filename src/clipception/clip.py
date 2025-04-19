@@ -58,7 +58,7 @@ def process_clips(input_file, output_dir, json_file, min_score=0):
             if success:
                 successful_clips.append((clip["name"], result))
             else:
-                failed_clips.append((clip["name"], result))
+                failed_clips.append((clip["name"], result)) # keyerror name
 
     # Print summary
     print(f"\nExtraction Summary:")

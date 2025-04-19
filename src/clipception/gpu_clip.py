@@ -11,6 +11,7 @@ import multiprocessing as mp
 from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 from tqdm import tqdm
+from ..settings import config
 
 
 API_KEY = os.getenv("OPEN_ROUTER_KEY")
@@ -92,7 +93,7 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
 
     max_retries = 4
     retry_delay = 2
-    model_name = "deepseek/deepseek-chat" # "gpt-4-turbo-preview"
+    model_name = config.get("general","model_name") # "gpt-4-turbo-preview"
 
     for attempt in range(max_retries):
         try:

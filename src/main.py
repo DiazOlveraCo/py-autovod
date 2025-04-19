@@ -43,6 +43,7 @@ def main() -> int:
         manager.start()
 
     manager.wait()
+
     return 0
 
 
@@ -51,5 +52,4 @@ if __name__ == "__main__":
         print("Error: Python 3.9 or higher is required")
         print("Current Python version: " + sys.version)
         sys.exit(1)
-
     sys.exit(main())

@@ -8,6 +8,8 @@ except ImportError:
 
     sys.exit(1)
 
+print("Imported torch")
+
 try:
     import whisper
     from whisper import load_model
@@ -17,6 +19,8 @@ except ImportError:
     import sys
 
     sys.exit(1)
+
+print("Imported whipser ")
 
 # Standard imports
 from pathlib import Path
@@ -296,7 +300,7 @@ if __name__ == "__main__":
         description="Process video with enhanced Whisper transcription"
     )
     parser.add_argument(
-        "input_file", type=str, help="Path to the video file to process"
+        "--input", type=str, help="Path to the video file to process"
     )
     parser.add_argument(
         "--model",
@@ -308,12 +312,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if not Path(args.input_file).exists():
-        print(f"Error: Input file {args.input_file} not found!")
+    if not Path(args.input).exists():
+        print(f"Error: Input file {args.input} not found!")
         sys.exit(1)
 
     try:
-        process_video(args.input_file, args.model)
+        process_video(args.input, args.model)
     except KeyboardInterrupt:
         print("\nProcessing interrupted by user!")
         sys.exit(1)
