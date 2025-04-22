@@ -11,7 +11,7 @@ A Python implementation of [autovod](https://github.com/jenslys/AutoVOD) with so
 - ( :heavy_check_mark: ) Smart AI video clipping
 - ( :x: ) Youtube shorts formatting
 - ( :x: ) Archive both video and chat logs
-- ( :x: ) Platform independent and Docker supported
+- ( :heavy_check_mark: ) Platform independent and Docker supported
 
 ## Installation
 
