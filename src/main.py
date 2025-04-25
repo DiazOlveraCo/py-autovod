@@ -6,7 +6,12 @@ import argparse
 from logger import logger
 from stream_manager import StreamManager
 from settings import config
+from dotenv import load_dotenv
 
+load_dotenv()  # This loads variables from .env into os.environ
+
+if not os.getenv("OPEN_ROUTER_KEY"):
+    raise ValueError("Please set the OPEN_ROUTER_KEY environment variable")
 
 def main() -> int:
     version = config.get("general", "version", fallback="1.0.0")
