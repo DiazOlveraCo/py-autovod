@@ -1,10 +1,11 @@
 # Import handling for Whisper with compatibility checks
+import sys
+
 try:
     import torch
 except ImportError:
     print("ERROR: PyTorch is required. Please install with:")
     print("pip install torch torchaudio")
-    import sys
 
     sys.exit(1)
 
@@ -16,7 +17,6 @@ try:
 except ImportError:
     print("ERROR: Whisper is not installed. Please install with:")
     print("pip install openai-whisper")
-    import sys
 
     sys.exit(1)
 
@@ -35,7 +35,6 @@ import librosa
 import soundfile as sf
 import os
 import atexit
-import sys
 
 # Global list for cleanup
 files_to_cleanup = []

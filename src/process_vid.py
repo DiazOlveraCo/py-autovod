@@ -2,10 +2,12 @@ import os
 import sys
 from pathlib import Path
 import argparse
+from settings import config
+from dotenv import load_dotenv
 
+load_dotenv()
 
 def main():
-
     num_clips = 10
     min_score = 0
 
@@ -40,15 +42,16 @@ def main():
 
     print("Imported script.")
 
-    process_video(video_path, model_size="tiny")
+    model_size = config.get("transcription", "model_size")
+    print(model_size)
+
+    process_video(video_path, model_size=model_size)
 
     transcription_json = os.path.join(
         output_dir, f"{filename_without_ext}.enhanced_transcription.json"
     )
     if not os.path.exists(transcription_json):
-        print(
-            f"Error: Expected transcription file {transcription_json} was not generated"
-        )
+        print(f"Error: Expected transcription file {transcription_json} was not generated")
         sys.exit(1)
 
     # Step 2: Generate clips JSON using GPU acceleration
