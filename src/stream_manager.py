@@ -35,9 +35,7 @@ class StreamManager:
         if not streamers_str.strip():
             return []
 
-        return list(
-            set([s.strip() for s in streamers_str.strip(",").split(",") if s.strip()])
-        )
+        return list(set([s.strip() for s in streamers_str.strip(",").split(",") if s.strip()]))
 
     def start(self, streamer_name: Optional[str] = None) -> None:
         if self.running:
@@ -91,37 +89,24 @@ class StreamManager:
         total = 0
         time.sleep(3)
 
-        pbar = None
-        try:
-            while self.running:
-                cur_size = get_size(recordings_dir)
-                speed = cur_size - prev_size
-                prev_size = cur_size
-                total += speed
+        with tqdm(
+            desc="Downloading",
+            unit="MB",
+            bar_format="{l_bar}{bar}| {n:.3f} MB ({postfix})",
+            dynamic_ncols=True,
+        ) as pbar:
+            try:
+                while self.running:
+                    cur_size = get_size(recordings_dir)
+                    speed = cur_size - prev_size
+                    prev_size = cur_size
+                    total += speed
 
-                # Only show progress bar if there's an active download
-                if speed > 0:
-                    # Initialize progress bar if it doesn't exist
-                    if pbar is None:
-                        pbar = tqdm(
-                            desc="Downloading",
-                            unit="MB",
-                            bar_format="{l_bar}{bar}| {n:.3f} MB ({postfix})",
-                            dynamic_ncols=True,
-                        )
-                        pbar.n = total
-
-                    # Update progress bar
+                    # Set postfix to current speed
                     pbar.set_postfix_str(f"{speed:.3f}MB/s")
                     pbar.n = total
                     pbar.refresh()
-                elif pbar is not None:
-                    # Close progress bar when download stops
-                    pbar.close()
-                    pbar = None
-
-                time.sleep(1)
-        except KeyboardInterrupt:
-            if pbar is not None:
+                    time.sleep(1)
+            except KeyboardInterrupt:
                 pbar.close()
-            self.stop()
+                self.stop()

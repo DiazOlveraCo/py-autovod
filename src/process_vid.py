@@ -34,7 +34,7 @@ def main():
     output_dir = os.path.dirname(video_path)
 
     # Step 1: Run enhanced transcription
-    print("\nStep 1: Generating enhanced transcription..")
+    #print("\nStep 1: Generating enhanced transcription..")
 
     from clipception.transcription import process_video
 

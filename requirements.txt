@@ -8,6 +8,10 @@ torch==2.7.0
 pydub==0.25.1
 librosa==0.11.0
 soundfile==0.13.1
+torch==2.6.0
+pydub==0.25.1
+librosa==0.11.0
+soundfile==0.13.1
 torchaudio
 torchvision
 tqdm==4.67.1

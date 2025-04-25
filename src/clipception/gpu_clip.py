@@ -56,11 +56,8 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
         api_key=API_KEY,
         default_headers={"HTTP-Referer": "http://localhost", "X-Title": "Local Test"},
     )
-
-    print("CLIPS:")
-    for i, dictionary in enumerate(clips):
-        print(f"dict {i+1}:")
-        print(i, dictionary)
+    
+    print(json.dumps(clips, indent=2))
 
     prompt = f"""
     You are an expert content analyzer focusing on viral clip potential. 
@@ -82,7 +79,7 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
     - Discussion potential
 
     For each clip, provide in this exact format:
-    1. **Clip Name: "[TITLE]"**
+    1. Clip Name: "[TITLE]"
     Start: [START]s, End: [END]s
     Score: [1-10]
     Factors: [Key viral factors]
@@ -90,6 +87,8 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
 
     Rank clips by viral potential. Focus on measurable features in the data.
     """
+    
+    print("CALLING RANK CLIPS CHUNK")
 
     max_retries = 4
     retry_delay = 2
@@ -106,7 +105,7 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
                     },
                     {"role": "user", "content": prompt},
                 ],
-                temperature=0.6,
+                temperature=0.7,
                 max_tokens=1000,
             )
 
@@ -128,15 +127,15 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
     return None
 
 
-def rank_all_clips_parallel(
-    clips: List[Dict], chunk_size: int = 5, num_processes: int = None
-) -> List[Dict]:
+def rank_all_clips_parallel(clips: List[Dict], chunk_size: int = 5, num_processes: int = None) -> List[Dict]:
     """Rank clips in parallel using multiple processes and GPU acceleration."""
     if num_processes is None:
         num_processes = mp.cpu_count()
 
     chunks = chunk_list(clips, chunk_size)
     chunk_data = [(chunk, i) for i, chunk in enumerate(chunks)]
+
+    print(json.dumps(chunk_data, indent=2))
 
     all_ranked_clips = []
 
@@ -207,7 +206,6 @@ def parse_clip_data(input_string: str) -> list[dict]:
     if current_clip:
         clips.append(current_clip)
 
-    print("len of clips: " + str(len(clips)))
     time.sleep(1)
     return clips
 
@@ -230,8 +228,8 @@ def save_top_clips_json(
 
 
 def transcribe_clips(
-    clips_json,
-    output_file,
+    clips_json : str,
+    output_file : str ,
     num_clips: int = 20,
     chunk_size: int = 5,
     num_processes=None,
@@ -239,8 +237,12 @@ def transcribe_clips(
     start_time = time.time()
 
     try:
-        clips = clips_json
-        ranked_clips = rank_all_clips_parallel(clips, chunk_size, num_processes)
+        clips = json.load(clips_json)
+        ranked_clips = rank_all_clips_parallel(
+            clips,
+            chunk_size,
+            num_processes,
+        )
 
         save_top_clips_json(ranked_clips, output_file, num_clips)
 
@@ -280,7 +282,7 @@ def main():
     start_time = time.time()
 
     try:
-        clips = load_clips(args.clips_json)
+        clips : List[Dict] = load_clips(args.clips_json)
         ranked_clips = rank_all_clips_parallel(
             clips, args.chunk_size, args.num_processes
         )

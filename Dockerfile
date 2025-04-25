@@ -13,6 +13,7 @@ ENV DISPLAY=:99
 # Install other dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     dos2unix \
+    python3-pip \ 
     git \
     tzdata \
     xvfb \
