@@ -21,6 +21,9 @@ class StreamManager:
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}(running={self.running!r}, retry_delay={self.retry_delay!r})"
+
     def _signal_handler(self, signum: int, frame) -> None:
         logger.info(f"Received signal {signum}, shutting down...")
         self.stop()

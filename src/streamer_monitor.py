@@ -25,12 +25,13 @@ class StreamerMonitor(threading.Thread):
 
         self._load_configuration()
 
+
     def _load_configuration(self) -> bool:
         self.config = load_config(self.streamer_name)
         if not self.config:
             self.config = load_config("default")
             if not self.config:
-                logger.error("Failed to load default config")
+                logger.error("Failed to load default config file.")
                 return False
 
         # Get stream source from config
@@ -49,9 +50,7 @@ class StreamerMonitor(threading.Thread):
 
         return True
 
-    def download_video(
-        self, video_title: Optional[str] = None, video_description: Optional[str] = None
-    ) -> bool:
+    def download_video(self, video_title: Optional[str] = None, video_description: Optional[str] = None) -> bool:
         if not self.config:
             return False
 
@@ -71,9 +70,7 @@ class StreamerMonitor(threading.Thread):
             command.extend(flags)
 
         try:
-            self.current_process = subprocess.Popen(
-                command, stdout=sys.stdout, stderr=subprocess.DEVNULL
-            )
+            self.current_process = subprocess.Popen(command, stdout=sys.stdout, stderr=subprocess.DEVNULL)
             retcode = self.current_process.wait()  # Wait until the stream ends
             success = retcode == 0
         except Exception as e:
@@ -83,9 +80,7 @@ class StreamerMonitor(threading.Thread):
             self.current_process = None
 
         # If download was successful and transcription is enabled, process the video for transcription
-        if success and self.config.getboolean(
-            "transcription", "enabled", fallback=False
-        ):
+        if success and self.config.getboolean("transcription", "enabled", fallback=False):
             self._process_transcription()
 
         return success
@@ -96,9 +91,7 @@ class StreamerMonitor(threading.Thread):
 
     def run(self) -> None:
         if not self.config or not self.stream_source_url:
-            logger.error(
-                f"Cannot start monitoring for {self.streamer_name}: missing configuration"
-            )
+            logger.error(f"Cannot start monitoring for {self.streamer_name}: missing configuration")
             return
 
         self.running = True
@@ -125,9 +118,7 @@ class StreamerMonitor(threading.Thread):
                             f"Stream for {self.streamer_name} downloaded successfully"
                         )
                 else:
-                    logger.info(
-                        f"{self.streamer_name} is offline. Retrying in {self.retry_delay} seconds..."
-                    )
+                    logger.info(f"{self.streamer_name} is offline. Retrying in {self.retry_delay} seconds...")
             except Exception as e:
                 logger.error(f"Error monitoring {self.streamer_name}: {e}")
 
@@ -139,7 +130,7 @@ class StreamerMonitor(threading.Thread):
             logger.debug(f"Terminating streamlink process for {self.streamer_name}")
             self.current_process.terminate()
             try:
-                self.current_process.wait(timeout=5)
+                self.current_process.wait(timeout=2)
             except subprocess.TimeoutExpired:
                 logger.debug("Process did not terminate in time; killing it")
                 self.current_process.kill()

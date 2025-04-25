@@ -14,7 +14,7 @@ def main() -> int:
     logger.info(f"Starting AutoVOD v{version}")
 
     parser = argparse.ArgumentParser(
-        description="AutoVOD - Automatic VOD downloader for Twitch, Kick, and YouTube"
+        description="AutoVOD - Automatic VOD downloader and uploader for Twitch, Kick, and YouTube"
     )
 
     parser.add_argument("-n", "--name", help="Single streamer name to monitor")
@@ -36,12 +36,7 @@ def main() -> int:
         return 0
 
     manager = StreamManager()
-
-    if args.name:
-        manager.start(args.name)
-    else:
-        manager.start()
-
+    manager.start(args.name) if args.name else manager.start()
     manager.wait()
 
     return 0

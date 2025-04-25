@@ -30,6 +30,7 @@ def determine_source(stream_source: str, streamer_name: str) -> Optional[str]:
     if not stream_source or not streamer_name:
         logger.error("Stream source and streamer name cannot be empty")
         return None
+    
     sources: Dict[str, str] = {
         "twitch": f"twitch.tv/{streamer_name}",
         "kick": f"kick.com/{streamer_name}",
@@ -71,8 +72,8 @@ def load_config(config_name: str) -> Optional[configparser.ConfigParser]:
     config = configparser.ConfigParser()
     config_file = f"{config_name}.ini"
 
-    if not os.path.isfile(config_file):
-        logger.warning(f"No config file found for {config_name}")
+    if not os.path.exists(config_file):
+        logger.warning(f"The config file {config_file} not found for {config_name}.")
         return None
 
     config.read(config_file)
