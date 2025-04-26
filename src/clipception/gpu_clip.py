@@ -11,14 +11,17 @@ import multiprocessing as mp
 from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 from tqdm import tqdm
-from ..settings import config
+from dotenv import load_dotenv
 
+load_dotenv()
 
 API_KEY = os.getenv("OPEN_ROUTER_KEY")
 
 if not API_KEY:
-    raise ValueError("Please set the OPEN_ROUTER_KEY environment variable")
+    print("Error: OPEN_ROUTER_KEY environment variable is not set")
+    raise ValueError("Please set it with: export OPEN_ROUTER_KEY='your_key_here'")
 
+model_name = "deepseek/deepseek-chat" 
 
 def chunk_list(lst: List, chunk_size: int) -> List[List]:
     """Split a list into chunks of specified size."""
@@ -57,8 +60,6 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
         default_headers={"HTTP-Referer": "http://localhost", "X-Title": "Local Test"},
     )
     
-    print(json.dumps(clips, indent=2))
-
     prompt = f"""
     You are an expert content analyzer focusing on viral clip potential. 
     Analyze these clips:
@@ -92,7 +93,6 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
 
     max_retries = 4
     retry_delay = 2
-    model_name = config.get("general","model_name") # "gpt-4-turbo-preview"
 
     for attempt in range(max_retries):
         try:
@@ -206,7 +206,6 @@ def parse_clip_data(input_string: str) -> list[dict]:
     if current_clip:
         clips.append(current_clip)
 
-    time.sleep(1)
     return clips
 
 
@@ -227,17 +226,21 @@ def save_top_clips_json(
         raise RuntimeError(f"Failed to save JSON file: {str(e)}")
 
 
-def transcribe_clips(
-    clips_json : str,
+def generate_clips(
+    model_name1 : str,
+    clips_json_path : str,
     output_file : str ,
     num_clips: int = 20,
     chunk_size: int = 5,
     num_processes=None,
 ):
+    global model_name
+    model_name = model_name1
     start_time = time.time()
 
+    clips : List[Dict] = load_clips(clips_json_path)
+
     try:
-        clips = json.load(clips_json)
         ranked_clips = rank_all_clips_parallel(
             clips,
             chunk_size,
@@ -250,52 +253,3 @@ def transcribe_clips(
         print(f"Total processing time: {time.time() - start_time:.2f} seconds")
     except Exception as e:
         print(f"Error: {str(e)}")
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        description="Rank and extract top viral video clips metadata using GPU acceleration."
-    )
-    parser.add_argument("clips_json", help="JSON file containing clip information")
-    parser.add_argument(
-        "--output_file",
-        default="top_clips_one.json",
-        help="Output JSON file for top clips",
-    )
-    parser.add_argument(
-        "--num_clips", type=int, default=20, help="Number of top clips to extract"
-    )
-    parser.add_argument(
-        "--chunk_size",
-        type=int,
-        default=5,
-        help="Number of clips to process per API call",
-    )
-    parser.add_argument(
-        "--num_processes",
-        type=int,
-        default=None,
-        help="Number of parallel processes (default: CPU count)",
-    )
-
-    args = parser.parse_args()
-    start_time = time.time()
-
-    try:
-        clips : List[Dict] = load_clips(args.clips_json)
-        ranked_clips = rank_all_clips_parallel(
-            clips, args.chunk_size, args.num_processes
-        )
-
-        save_top_clips_json(ranked_clips, args.output_file, args.num_clips)
-
-        print(f"\nSuccessfully saved top {args.num_clips} clips to {args.output_file}")
-        print(f"Total processing time: {time.time() - start_time:.2f} seconds")
-
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()

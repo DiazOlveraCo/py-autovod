@@ -5,47 +5,54 @@ import argparse
 from settings import config
 from dotenv import load_dotenv
 
+from clipception.transcription import process_video
+from clipception.gpu_clip import generate_clips
+from clipception.clip import process_clips
+
+
 load_dotenv()
+
+# Check for OpenRouter API key
+if not os.getenv("OPEN_ROUTER_KEY"):
+    print("Error: OPEN_ROUTER_KEY environment variable is not set")
+    print("Please set it with: export OPEN_ROUTER_KEY='your_key_here'")
+    sys.exit(1)
 
 def main():
     num_clips = 10
     min_score = 0
+    model_size = config.get("transcription", "model_size")
+    model_name = config.get("general","model_name")
 
     # my system can only handle 2 video processes at a time.
 
-    # parser = argparse.ArgumentParser(
-    #     description='Process a video to generate clips based on transcription analysis.',
-    #     formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    # )
+    parser = argparse.ArgumentParser(
+        description='Process a video to generate clips based on transcription analysis.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
 
-    # parser.add_argument(
-    #     'video_path',
-    #     help='Path to the input video file'
-    # )
+    parser.add_argument(
+        'video_path',
+        nargs='?',
+        help='Path to the input video file',
+        default=None,
+    )
 
-    # args = parser.parse_args()
+    args = parser.parse_args()
 
-    # Check for OpenRouter API key
-    if not os.getenv("OPEN_ROUTER_KEY"):
-        print("Error: OPEN_ROUTER_KEY environment variable is not set")
-        print("Please set it with: export OPEN_ROUTER_KEY='your_key_here'")
-        sys.exit(1)
+    video_path = ""
+    if args.video_path:
+        video_path = args.video_path
+    else:
+        video_path = 'recordings/yourragegaming/319832711164/yourragegaming-2025-04-19-16-31-34.ts'
 
-    video_path = "recordings/Meisaka/319736676348/Meisaka-2025-04-17-21-48-20.ts" #args.video_path
     filename_without_ext = os.path.splitext(os.path.basename(video_path))[0]
     output_dir = os.path.dirname(video_path)
 
     # Step 1: Run enhanced transcription
-    #print("\nStep 1: Generating enhanced transcription..")
+    print("\nStep 1: Generating enhanced transcription..")
 
-    from clipception.transcription import process_video
-
-    print("Imported script.")
-
-    model_size = config.get("transcription", "model_size")
-    print(model_size)
-
-    process_video(video_path, model_size=model_size)
+    # process_video(video_path, model_size=model_size)
 
     transcription_json = os.path.join(
         output_dir, f"{filename_without_ext}.enhanced_transcription.json"
@@ -60,9 +67,7 @@ def main():
     output_file = os.path.join(output_dir, "top_clips_one.json")
     # TODO write a function to calculate num_clips
 
-    from clipception.gpu_clip import transcribe_clips
-
-    transcribe_clips(transcription_json, output_file, num_clips = num_clips, chunk_size=5)
+    generate_clips(model_name, transcription_json, output_file, num_clips = num_clips, chunk_size=5)
 
     if not os.path.exists(output_file):
         print(f"Error: Top clips file {output_file} was not generated")
@@ -71,8 +76,6 @@ def main():
     # Step 3: Extract video clips
     print("\nStep 3: Extracting clips..")
     clips_output_dir = os.path.join(output_dir, "clips")
-
-    from clipception.clip import process_clips
 
     process_clips(video_path, clips_output_dir, output_file, min_score = min_score)
 

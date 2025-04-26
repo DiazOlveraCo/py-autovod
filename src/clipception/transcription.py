@@ -6,10 +6,7 @@ try:
 except ImportError:
     print("ERROR: PyTorch is required. Please install with:")
     print("pip install torch torchaudio")
-
     sys.exit(1)
-
-print("Imported torch")
 
 try:
     import whisper
@@ -17,10 +14,7 @@ try:
 except ImportError:
     print("ERROR: Whisper is not installed. Please install with:")
     print("pip install openai-whisper")
-
     sys.exit(1)
-
-print("Imported whipser ")
 
 # Standard imports
 from pathlib import Path
