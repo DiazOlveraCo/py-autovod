@@ -135,7 +135,7 @@ def rank_all_clips_parallel(clips: List[Dict], chunk_size: int = 5, num_processe
     all_ranked_clips = []
 
     # Setup progress bar
-    pbar = tqdm(total=len(chunks), desc="Processing chunks")
+    # pbar = tqdm(total=len(chunks), desc="Processing chunks")
 
     # Use ThreadPoolExecutor for parallel API calls
     with ThreadPoolExecutor(max_workers=num_processes) as executor:
@@ -145,11 +145,11 @@ def rank_all_clips_parallel(clips: List[Dict], chunk_size: int = 5, num_processe
             try:
                 result = future.result()
                 all_ranked_clips.extend(result)
-                pbar.update(1)
+                #pbar.update(1)
             except Exception as e:
                 print(f"Warning: Chunk processing failed: {str(e)}")
 
-    pbar.close()
+    #pbar.close()
 
     # Final sorting of all clips
     return sorted(all_ranked_clips, key=lambda x: x.get("score", 0), reverse=True)

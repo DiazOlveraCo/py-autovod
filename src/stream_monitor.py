@@ -24,7 +24,6 @@ class StreamMonitor(threading.Thread):
         self.config = None
         self.stream_source_url = None
         self.current_process = None  # Store the running streamlink subprocess
-
         self._load_configuration()
 
 
@@ -52,7 +51,7 @@ class StreamMonitor(threading.Thread):
 
         return True
 
-    def download_video(self, video_title: Optional[str] = None, video_description: Optional[str] = None) -> tuple[bool, str]:
+    def download_video(self) -> tuple[bool, str]:
         if not self.config:
             return False, ""
 
@@ -114,15 +113,14 @@ class StreamMonitor(threading.Thread):
                     #         self.config["source"]["api_url"], self.streamer_name
                     #     )
 
-                    download_success, video_path = self.download_video(video_title, video_description)
+                    download_success, video_path = self.download_video()
 
                     if download_success:
                         logger.success(f"Stream for {self.streamer_name} downloaded successfully")
                         if video_path:
-                            logger.info(f"Queuing video for processing: {video_path}")
                             processor.process(video_path)
                         else:
-                            logger.error("Downloaded file path not found, cannot process video")
+                            logger.warning("Downloaded file path not found, cannot process video")
 
                 else:
                     logger.info(f"{self.streamer_name} is offline. Retrying in {self.retry_delay} seconds...")
