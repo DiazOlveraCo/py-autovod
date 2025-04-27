@@ -46,13 +46,25 @@ You can generate clips from a video file directly using a script.
 Download an example video file from YouTube:
 
    ```bash
-   python src/download_youtube.py https://www.youtube.com/watch?v=dQw4w9WgXcQ --format best
+   python src/download_yt.py https://www.youtube.com/watch?v=dQw4w9WgXcQ --format best
    ``` 
 
    Run this command with the path to the video:
    ```bash
    python3 src/process_vid.py <path/to/video>
    ``` 
+
+### Shorts Format
+With ffmpeg you can convert mp4 into Youtube shorts format (9:16 aspect ratio):
+```bash
+ffmpeg -i input.mp4 -vf "crop=ih*9/16:ih,scale=1080:1920" -c:a copy output.mp4
+
+```
+Add background music:
+```bash
+ffmpeg -i input.mp4 -i music.mp3 -filter_complex "[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2[v];[1:a]volume=0.3[a1];[0:a][a1]amix=inputs=2[a]" -map "[v]" -map "[a]" -shortest output.mp4
+```
+
 
 ## Transcription
 

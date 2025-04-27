@@ -32,7 +32,7 @@ import atexit
 
 # Global list for cleanup
 files_to_cleanup = []
-MIN_DURATION = 240.0
+MIN_DURATION = 50.0
 
 
 def format_time(seconds):
@@ -105,6 +105,7 @@ def extract_audio(video_path):
     subprocess.run(
         [
             "ffmpeg",
+            "-y",
             "-loglevel",
             "error",
             "-i",
