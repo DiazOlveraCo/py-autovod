@@ -38,7 +38,9 @@ class StreamManager:
         if not streamers_str.strip():
             return []
 
-        return list(set([s.strip() for s in streamers_str.strip(",").split(",") if s.strip()]))
+        return list(
+            set([s.strip() for s in streamers_str.strip(",").split(",") if s.strip()])
+        )
 
     def start(self, streamer_name: Optional[str] = None) -> None:
         if self.running:

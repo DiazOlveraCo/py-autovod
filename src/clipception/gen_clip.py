@@ -21,7 +21,8 @@ if not API_KEY:
     print("Error: OPEN_ROUTER_KEY environment variable is not set")
     raise ValueError("Please set it with: export OPEN_ROUTER_KEY='your_key_here'")
 
-model_name = "deepseek/deepseek-chat" 
+model_name = "deepseek/deepseek-chat"
+
 
 def chunk_list(lst: List, chunk_size: int) -> List[List]:
     """Split a list into chunks of specified size."""
@@ -59,7 +60,7 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
         api_key=API_KEY,
         default_headers={"HTTP-Referer": "http://localhost", "X-Title": "Local Test"},
     )
-    
+
     prompt = f"""
     You are an expert content analyzer focusing on viral clip potential. 
     You can combine clips to form a longer clip, with the longest clip being 1 minute. Analyze these clips:
@@ -91,11 +92,11 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
     # Get temperature and max_tokens from environment variables if available
     temperature = float(os.getenv("LLM_TEMPERATURE", "0.5"))
     max_tokens = int(os.getenv("LLM_MAX_TOKENS", "1000"))
-    
+
     for attempt in range(max_retries):
         try:
             completion = client.chat.completions.create(
-                model = model_name,
+                model=model_name,
                 messages=[
                     {
                         "role": "system",
@@ -124,7 +125,9 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
     return None
 
 
-def rank_all_clips_parallel(clips: List[Dict], chunk_size: int = 5, num_processes: int = None) -> List[Dict]:
+def rank_all_clips_parallel(
+    clips: List[Dict], chunk_size: int = 5, num_processes: int = None
+) -> List[Dict]:
     """Rank clips in parallel using multiple processes."""
     if num_processes is None:
         num_processes = mp.cpu_count()
@@ -145,11 +148,11 @@ def rank_all_clips_parallel(clips: List[Dict], chunk_size: int = 5, num_processe
             try:
                 result = future.result()
                 all_ranked_clips.extend(result)
-                #pbar.update(1)
+                # pbar.update(1)
             except Exception as e:
                 print(f"Warning: Chunk processing failed: {str(e)}")
 
-    #pbar.close()
+    # pbar.close()
 
     # Final sorting of all clips
     return sorted(all_ranked_clips, key=lambda x: x.get("score", 0), reverse=True)
@@ -158,17 +161,21 @@ def rank_all_clips_parallel(clips: List[Dict], chunk_size: int = 5, num_processe
 def parse_clip_data(input_string: str) -> list[dict]:
     if not input_string:
         return []
-    cleaned_str = input_string.replace("```json","").replace("```","").strip()
+    cleaned_str = input_string.replace("```json", "").replace("```", "").strip()
     try:
         # Parse the JSON string into a Python list of dictionaries
-        clips = json.loads(cleaned_str)['clips']
-        
+        clips = json.loads(cleaned_str)["clips"]
+
         # Filter out invalid clip structures
         clips = [
-            clip for clip in clips
-            if all(key in clip for key in ('name', 'start', 'end', 'score', 'factors', 'platforms'))
+            clip
+            for clip in clips
+            if all(
+                key in clip
+                for key in ("name", "start", "end", "score", "factors", "platforms")
+            )
         ]
-        
+
         return clips
     except (json.JSONDecodeError, ValueError) as e:
         print(f"Error parsing clip data: {e}")
@@ -193,9 +200,9 @@ def save_top_clips_json(
 
 
 def generate_clips(
-    model_name1 : str,
-    clips_json_path : str,
-    output_file : str ,
+    model_name1: str,
+    clips_json_path: str,
+    output_file: str,
     num_clips: int = 20,
     chunk_size: int = 10,
     num_processes=None,
@@ -203,14 +210,10 @@ def generate_clips(
     global model_name
     model_name = model_name1
     start_time = time.time()
-    clips : List[Dict] = load_clips(clips_json_path)
+    clips: List[Dict] = load_clips(clips_json_path)
 
     try:
-        ranked_clips = rank_all_clips_parallel(
-            clips,
-            chunk_size,
-            num_processes,
-        )
+        ranked_clips = rank_all_clips_parallel(clips, chunk_size, num_processes)
 
         save_top_clips_json(ranked_clips, output_file, num_clips)
 

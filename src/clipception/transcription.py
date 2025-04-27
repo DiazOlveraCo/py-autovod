@@ -106,8 +106,7 @@ def extract_audio(video_path):
         [
             "ffmpeg",
             "-loglevel",
-            "error"
-            "-i",
+            "error" "-i",
             str(video_file),
             "-vn",
             "-acodec",
@@ -249,7 +248,7 @@ def process_video(video_path, model_size="base"):
             device = "cpu"
     else:
         device = "cuda" if check_cuda() else "cpu"
-    
+
     print(f"\n{'='*40}")
     print(f"Processing on: {device.upper()}")
     print(f"{'='*40}\n")
@@ -266,7 +265,9 @@ def process_video(video_path, model_size="base"):
         model = whisper.load_model(model_size).to(device)
 
         if device == "cuda":
-            print(f"GPU Memory allocated: {torch.cuda.memory_allocated()/1024**2:.2f} MB")
+            print(
+                f"GPU Memory allocated: {torch.cuda.memory_allocated()/1024**2:.2f} MB"
+            )
             print(f"GPU Memory reserved: {torch.cuda.memory_reserved()/1024**2:.2f} MB")
 
         # Transcription
@@ -292,5 +293,6 @@ def process_video(video_path, model_size="base"):
         if device == "cuda":
             torch.cuda.empty_cache()
         cleanup_files()
+
 
 atexit.register(cleanup_files)
