@@ -105,6 +105,8 @@ def extract_audio(video_path):
     subprocess.run(
         [
             "ffmpeg",
+            "-loglevel",
+            "error"
             "-i",
             str(video_file),
             "-vn",

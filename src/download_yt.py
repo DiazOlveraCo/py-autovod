@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+"""
+YouTube Video Downloader
+
+This script downloads YouTube videos from a provided URL.
+Usage: python download_yt.py [YouTube URL]
+"""
+
+import sys
+import os
+import argparse
+from pathlib import Path
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='Download YouTube videos')
+    parser.add_argument('url', help='YouTube video URL')
+    parser.add_argument('-o', '--output', help='Output directory', default='downloads')
+    parser.add_argument('-f', '--format', help='Video format (default: best)', default='best')
+    return parser.parse_args()
+
+
+def download_video(url, output_dir, format_option):
+    """
+    Download a YouTube video using yt-dlp.
+    
+    Args:
+        url: YouTube video URL
+        output_dir: Directory to save the downloaded video
+        format_option: Video format option
+    
+    Returns:
+        bool: True if download was successful, False otherwise
+    """
+    try:
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Import yt-dlp here to avoid import error if not installed
+        try:
+            import yt_dlp
+        except ImportError:
+            print("Error: yt-dlp is not installed.")
+            print("Please install it using: pip install yt-dlp")
+            return False
+        
+        # Configure yt-dlp options
+        ydl_opts = {
+            'format': format_option,
+            'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
+            'quiet': False,
+            'no_warnings': False,
+            'progress': True,
+        }
+        
+        # Download the video
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            print(f"Downloading video from: {url}")
+            ydl.download([url])
+            
+        print(f"Video downloaded successfully to {output_dir}")
+        return True
+        
+    except Exception as e:
+        print(f"Error downloading video: {e}")
+        return False
+
+
+def main():
+    args = parse_arguments()
+    
+    if not args.url.startswith(('http://', 'https://')):
+        print("Error: Please provide a valid URL starting with http:// or https://")
+        sys.exit(1)
+    
+    # Download the yt video
+    success = download_video(args.url, args.output, args.format)
+    
+    sys.exit(0 if success else 1)
+
+
+if __name__ == "__main__":
+    main()

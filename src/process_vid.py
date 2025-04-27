@@ -23,8 +23,6 @@ def main():
     model_size = config.get("transcription", "model_size")
     model_name = config.get("llm","model_name")
 
-    # my system can only handle 2 video processes at a time.
-
     parser = argparse.ArgumentParser(
         description='Process a video to generate clips based on transcription analysis.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
