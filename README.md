@@ -34,10 +34,18 @@ Create a configuration file for each streamer where the file name is the streame
 
 3. Copy the `.env.example` file to a new file called `.env`. Fill in the .env file with your API keys.
 
-4. Run the program:
+4. Run the command:
    ```bash
    python3 src/main.py
    ```
+
+## Clip Generation
+
+You can generate clips from a video file directly using the provided script.
+
+   ```bash
+   python3 src/process_vid.py <path/to/video>
+   ``` 
 
 ## Transcription
 
