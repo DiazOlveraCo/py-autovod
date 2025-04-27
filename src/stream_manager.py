@@ -106,7 +106,7 @@ class StreamManager:
                     total += speed
 
                     # Set postfix to current speed
-                    pbar.set_postfix_str(f"{speed:.3f}MB/s")
+                    pbar.set_postfix_str(f"{speed:.3f} MB/s")
                     pbar.n = total
                     pbar.refresh()
                     time.sleep(1)

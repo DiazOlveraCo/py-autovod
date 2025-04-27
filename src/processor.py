@@ -92,7 +92,6 @@ class Processor:
             
             try:
                 # Override device detection with config setting
-                # Note: process_video will still fall back to CPU if CUDA is not available
                 os.environ["FORCE_DEVICE"] = device
                 process_video(video_path, model_size=model_size)
             except Exception as e:

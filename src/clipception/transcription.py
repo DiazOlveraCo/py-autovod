@@ -32,6 +32,7 @@ import atexit
 
 # Global list for cleanup
 files_to_cleanup = []
+MIN_DURATION = 40.0
 
 
 def format_time(seconds):
@@ -169,7 +170,7 @@ def combine_segments(segments):
     }
 
 
-def transcribe_with_features(model, audio_path, device: str, min_duration=40.0):
+def transcribe_with_features(model, audio_path, device: str, min_duration=MIN_DURATION):
     """Get transcription with timestamps and audio features"""
     print("Generating enhanced transcription...")
     enhanced_segments = []
