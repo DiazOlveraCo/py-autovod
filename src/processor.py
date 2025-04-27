@@ -40,6 +40,6 @@ class Processor:
 
     def _process_single_file(self, video_path):
         # Write code to process
-
+        pass
 
 processor = Processor()
