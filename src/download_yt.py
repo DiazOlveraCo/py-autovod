@@ -47,7 +47,8 @@ def download_video(url, output_dir, format_option):
 
         # Configure yt-dlp options
         ydl_opts = {
-            "format": format_option,
+            'format': 'bestvideo+bestaudio/best',
+            'merge_output_format': 'mp4',
             "outtmpl": os.path.join(output_dir, "%(title)s.%(ext)s"),
             "quiet": False,
             "no_warnings": False,

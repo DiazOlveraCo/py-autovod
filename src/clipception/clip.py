@@ -74,11 +74,3 @@ def process_clips(input_file, output_dir, json_file, min_score=0):
         print("\nFailed clips:")
         for name, error in failed_clips:
             print(f"- {name}: {error}")
-    if successful_clips:
-        try:
-            os.remove(input_file)
-            print(f"\nOriginal VOD file removed: {input_file}")
-        except Exception as e:
-            print(f"\nFailed to remove VOD file: {str(e)}")
-    elif remove_vod and failed_clips:
-        print(f"\nVOD file not removed due to failed clip extractions.")
