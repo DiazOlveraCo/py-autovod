@@ -41,7 +41,15 @@ Create a configuration file for each streamer where the file name is the streame
 
 ## Clip Generation
 
-You can generate clips from a video file directly using a script. Run the command:
+You can generate clips from a video file directly using a script. 
+
+Download an example video file from YouTube:
+
+   ```bash
+   python src/download_youtube.py https://www.youtube.com/watch?v=dQw4w9WgXcQ --format best
+   ``` 
+
+   Run this command with the path to the video:
    ```bash
    python3 src/process_vid.py <path/to/video>
    ``` 
