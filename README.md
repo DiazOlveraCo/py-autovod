@@ -46,7 +46,7 @@ You can generate clips from a video file directly using a script.
 Download an example video file from YouTube:
 
    ```bash
-   python src/download_yt.py https://www.youtube.com/watch?v=dQw4w9WgXcQ --format best
+   python src/download_yt.py https://www.youtube.com/watch?v=dQw4w9WgXcQ
    ``` 
 
    Run this command with the path to the video:
