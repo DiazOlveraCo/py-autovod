@@ -21,6 +21,7 @@ if not os.getenv("OPEN_ROUTER_KEY"):
 def main():
     num_clips = 10
     min_score = 0
+    chunk_size = 15
     model_size = config.get("transcription", "model_size")
     model_name = config.get("llm", "model_name")
 
@@ -66,7 +67,7 @@ def main():
     output_file = os.path.join(output_dir, "top_clips_one.json")
 
     generate_clips(
-        model_name, transcription_json, output_file, num_clips=num_clips, chunk_size=5
+        model_name, transcription_json, output_file, num_clips=num_clips, chunk_size=chunk_size
     )
 
     if not os.path.exists(output_file):

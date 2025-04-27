@@ -66,7 +66,8 @@ class Processor:
                 return
 
             num_clips = 10  # Default number of clips to generate
-            min_score = 0  # Default minimum score threshold
+            min_score = 1  # Default minimum score threshold
+            chunk_size = 10
 
             # Transcription settings
             model_size = config.get("transcription", "model_size")
@@ -127,7 +128,7 @@ class Processor:
                     transcription_json,
                     output_file,
                     num_clips=num_clips,
-                    chunk_size=5,
+                    chunk_size=chunk_size,
                 )
             except Exception as e:
                 logger.error(f"Error during clip generation: {str(e)}")
