@@ -30,7 +30,7 @@ def determine_source(stream_source: str, streamer_name: str) -> Optional[str]:
     if not stream_source or not streamer_name:
         logger.error("Stream source and streamer name cannot be empty")
         return None
-    
+
     sources: Dict[str, str] = {
         "twitch": f"twitch.tv/{streamer_name}",
         "kick": f"kick.com/{streamer_name}",
