@@ -120,7 +120,6 @@ def extract_audio(video_path):
 
     global files_to_cleanup
     files_to_cleanup.append(str(audio_path))
-
     return audio_path
 
 
@@ -170,7 +169,7 @@ def combine_segments(segments):
     }
 
 
-def transcribe_with_features(model, audio_path, device: str, min_duration=15.0):
+def transcribe_with_features(model, audio_path, device: str, min_duration=40.0):
     """Get transcription with timestamps and audio features"""
     print("Generating enhanced transcription...")
     enhanced_segments = []
@@ -223,15 +222,15 @@ def transcribe_with_features(model, audio_path, device: str, min_duration=15.0):
 def cleanup_files():
     """Clean up temporary files created during processing"""
     pass
-    # global files_to_cleanup
-    # print("\nCleaning up temporary files...")
-    # for file_path in files_to_cleanup:
-    #     try:
-    #         if os.path.exists(file_path):
-    #             os.unlink(file_path)
-    #             print(f"Removed file: {file_path}")
-    #     except Exception as e:
-    #         print(f"Warning: Failed to remove {file_path}: {e}")
+    global files_to_cleanup
+    print("\nCleaning up temporary files...")
+    for file_path in files_to_cleanup:
+        try:
+            if os.path.exists(file_path):
+                os.unlink(file_path)
+                print(f"Removed file: {file_path}")
+        except Exception as e:
+            print(f"Warning: Failed to remove {file_path}: {e}")
 
 
 def process_video(video_path, model_size="base"):
@@ -255,9 +254,7 @@ def process_video(video_path, model_size="base"):
         model = whisper.load_model(model_size).to(device)
 
         if device == "cuda":
-            print(
-                f"GPU Memory allocated: {torch.cuda.memory_allocated()/1024**2:.2f} MB"
-            )
+            print(f"GPU Memory allocated: {torch.cuda.memory_allocated()/1024**2:.2f} MB")
             print(f"GPU Memory reserved: {torch.cuda.memory_reserved()/1024**2:.2f} MB")
 
         # Transcription
@@ -284,37 +281,38 @@ def process_video(video_path, model_size="base"):
             torch.cuda.empty_cache()
         cleanup_files()
 
+atexit.register(cleanup_files)
 
-if __name__ == "__main__":
-    # Register cleanup handler
-    atexit.register(cleanup_files)
+# if __name__ == "__main__":
+#     # Register cleanup handler
+#     atexit.register(cleanup_files)
 
-    # Set up argument parsing
-    parser = argparse.ArgumentParser(
-        description="Process video with enhanced Whisper transcription"
-    )
-    parser.add_argument(
-        "--input", type=str, help="Path to the video file to process"
-    )
-    parser.add_argument(
-        "--model",
-        type=str,
-        default="base",
-        choices=["tiny", "base", "small", "medium", "large"],
-        help="Whisper model size (default: base)",
-    )
+#     # Set up argument parsing
+#     parser = argparse.ArgumentParser(
+#         description="Process video with enhanced Whisper transcription"
+#     )
+#     parser.add_argument(
+#         "--input", type=str, help="Path to the video file to process"
+#     )
+#     parser.add_argument(
+#         "--model",
+#         type=str,
+#         default="base",
+#         choices=["tiny", "base", "small", "medium", "large"],
+#         help="Whisper model size (default: base)",
+#     )
 
-    args = parser.parse_args()
+#     args = parser.parse_args()
 
-    if not Path(args.input).exists():
-        print(f"Error: Input file {args.input} not found!")
-        sys.exit(1)
+#     if not Path(args.input).exists():
+#         print(f"Error: Input file {args.input} not found!")
+#         sys.exit(1)
 
-    try:
-        process_video(args.input, args.model)
-    except KeyboardInterrupt:
-        print("\nProcessing interrupted by user!")
-        sys.exit(1)
-    except Exception as e:
-        print(f"\nCritical error occurred: {str(e)}")
-        sys.exit(1)
+#     try:
+#         process_video(args.input, args.model)
+#     except KeyboardInterrupt:
+#         print("\nProcessing interrupted by user!")
+#         sys.exit(1)
+#     except Exception as e:
+#         print(f"\nCritical error occurred: {str(e)}")
+#         sys.exit(1)

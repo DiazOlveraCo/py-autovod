@@ -9,9 +9,9 @@ from utils import (
     check_stream_live,
     load_config,
 )
+from processor import processor
 
-
-class StreamerMonitor(threading.Thread):
+class StreamMonitor(threading.Thread):
     """Class to monitor and download streams for a single streamer."""
 
     def __init__(self, streamer_name: str, retry_delay: int = 60):
@@ -79,14 +79,14 @@ class StreamerMonitor(threading.Thread):
         finally:
             self.current_process = None
 
-        # If download was successful and transcription is enabled, process the video for transcription
-        if success and self.config.getboolean("transcription", "enabled", fallback=False):
-            self._process_transcription()
-
         return success
 
-    def _process_transcription(self) -> None:
+    def _process(self) -> None:
         """Process the latest downloaded file for transcription."""
+
+        if self.config.getboolean("transcription", "enabled", fallback=False):
+            pass
+
         pass
 
     def run(self) -> None:
@@ -103,20 +103,19 @@ class StreamerMonitor(threading.Thread):
                     logger.info(f"{self.streamer_name} is live")
                     video_title = None
                     video_description = None
+                    video_path = ""
 
                     # if self.config.getboolean("source", "api_calls", fallback=False):
                     #     video_title, video_description = fetch_metadata(
                     #         self.config["source"]["api_url"], self.streamer_name
                     #     )
 
-                    download_success = self.download_video(
-                        video_title, video_description
-                    )
+                    download_success = self.download_video(video_title, video_description)
 
                     if download_success:
-                        logger.success(
-                            f"Stream for {self.streamer_name} downloaded successfully"
-                        )
+                        logger.success(f"Stream for {self.streamer_name} downloaded successfully")
+                        processor.process(video_path)
+
                 else:
                     logger.info(f"{self.streamer_name} is offline. Retrying in {self.retry_delay} seconds...")
             except Exception as e:

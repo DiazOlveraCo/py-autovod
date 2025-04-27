@@ -62,7 +62,7 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
     
     prompt = f"""
     You are an expert content analyzer focusing on viral clip potential. 
-    Analyze these clips:
+    You can combine clips to form a longer clip, with the longest clip being 1 minute. Analyze these clips:
 
     {json.dumps(clips, indent=2)}
 
@@ -91,7 +91,7 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
     for attempt in range(max_retries):
         try:
             completion = client.chat.completions.create(
-                model=model_name,
+                model = model_name,
                 messages=[
                     {
                         "role": "system",
@@ -99,7 +99,7 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
                     },
                     {"role": "user", "content": prompt},
                 ],
-                temperature=0.5, # Lower temperature for more structured output
+                temperature=0.5,
                 max_tokens=1000,
             )
 

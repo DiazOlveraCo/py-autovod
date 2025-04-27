@@ -4,7 +4,7 @@ import signal
 from typing import Dict, List, Optional
 from logger import logger
 from settings import config
-from streamer_monitor import StreamerMonitor
+from stream_monitor import StreamMonitor
 from utils import get_size
 from tqdm import tqdm
 
@@ -13,7 +13,7 @@ class StreamManager:
     """Class to manage multiple streamer monitors."""
 
     def __init__(self):
-        self.monitors: Dict[str, StreamerMonitor] = {}
+        self.monitors: Dict[str, StreamMonitor] = {}
         self.running = False
 
         self.retry_delay = config.getint("general", "retry_delay", fallback=120)
@@ -62,7 +62,7 @@ class StreamManager:
 
         # Create and start a monitor for each streamer
         for name in streamers:
-            monitor = StreamerMonitor(name, self.retry_delay)
+            monitor = StreamMonitor(name, self.retry_delay)
             self.monitors[name] = monitor
             monitor.daemon = True  # Set as daemon so they exit when main thread exits
             monitor.start()
