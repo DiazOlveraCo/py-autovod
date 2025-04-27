@@ -1,7 +1,7 @@
 from loguru import logger
 import sys
-from settings import DEBUG
 
+DEBUG = True
 
 def debug_filter(record):
     return DEBUG or record["level"].name != "debug"
