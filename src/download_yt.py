@@ -47,12 +47,13 @@ def download_video(url, output_dir, format_option):
 
         # Configure yt-dlp options
         ydl_opts = {
-            'format': 'bestvideo+bestaudio/best',
-            'merge_output_format': 'mp4',
-            "outtmpl": os.path.join(output_dir, "%(title)s.%(ext)s"),
-            "quiet": False,
-            "no_warnings": False,
-            "progress": True,
+            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+            'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
+            'merge_output_format': 'mp4',  # Ensures final output is MP4
+            'quiet': False,
+            'progress': True,
+            'no_warnings': False,
+            'restrictfilenames': True,  # Avoids special characters in filenames
         }
 
         # Download the video
