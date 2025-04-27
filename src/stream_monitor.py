@@ -18,7 +18,7 @@ class StreamMonitor(threading.Thread):
 
     def __init__(self, streamer_name: str, retry_delay: int = 60):
         super().__init__(name=f"m-{streamer_name}")
-        self.streamer_name = streamer_name
+        self.streamer_name = streamer_name.lower()
         self.retry_delay = retry_delay
         self.running = False
         self.config = None
@@ -44,12 +44,48 @@ class StreamMonitor(threading.Thread):
             return False
 
         if not self.stream_source_url:
-            logger.error(
-                f"Unknown stream source: {stream_source} for {self.streamer_name}"
-            )
+            logger.error(f"Unknown stream source: {stream_source} for {self.streamer_name}")
             return False
 
         return True
+
+    def _find_latest_video_file(self) -> str:
+        """Find the most recently modified .ts file in the streamer's recordings directory."""
+        base_dir = f"recordings/{self.streamer_name}"
+        
+        if not os.path.exists(base_dir):
+            logger.error(f"Recordings directory not found: {base_dir}")
+            return ""
+            
+        stream_dirs = []
+        for item in os.listdir(base_dir):
+            item_path = os.path.join(base_dir, item)
+            if os.path.isdir(item_path):
+                stream_dirs.append(item_path)
+                
+        if not stream_dirs:
+            logger.error(f"No stream directories found in {base_dir}")
+            return ""
+            
+        # Find the most recently modified .ts file across all stream directories
+        latest_file = ""
+        latest_time = 0
+        
+        for stream_dir in stream_dirs:
+            for file in os.listdir(stream_dir):
+                file_path = os.path.join(stream_dir, file)
+                mod_time = os.path.getmtime(file_path)
+                
+                if mod_time > latest_time:
+                    latest_time = mod_time
+                    latest_file = file_path
+                        
+        if latest_file:
+            logger.debug(f"Found latest video file: {latest_file}")
+            return latest_file
+        else:
+            logger.error(f"No .ts files found in {base_dir} subdirectories")
+            return ""
 
     def download_video(self) -> tuple[bool, str]:
         if not self.config:
@@ -58,6 +94,10 @@ class StreamMonitor(threading.Thread):
         quality = self.config["streamlink"]["quality"]
         current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         output_path = f"recordings/{self.streamer_name}/{{id}}/{self.streamer_name}-{current_time}.ts"
+        
+        # Ensure the base directory exists
+        base_dir = f"recordings/{self.streamer_name}"
+        os.makedirs(base_dir, exist_ok=True)
         
         command = [
             "streamlink",
@@ -73,24 +113,31 @@ class StreamMonitor(threading.Thread):
             command.extend(flags)
 
         try:
+            
+            # Start the download process
             self.current_process = subprocess.Popen(command, stdout=sys.stdout, stderr=subprocess.DEVNULL)
             retcode = self.current_process.wait()  # Wait until the stream ends
             success = retcode == 0
+            
+            if success:
+                actual_path = self._find_latest_video_file()
+                
+                if actual_path and os.path.exists(actual_path):
+                    logger.debug(f"Found downloaded file: {actual_path}")
+                    return True, actual_path
+                else:
+                    logger.debug(f"Found file {actual_path} but it appears to be from a previous download")
+                
+                logger.warning("Could not find the downloaded file")
+                return True, ""
+            else:
+                return False, ""
+                
         except Exception as e:
             logger.error(f"Error running streamlink: {e}")
-            success = False
+            return False, ""
         finally:
             self.current_process = None
-
-        return success, output_path
-
-    def _process(self) -> None:
-        """Process the latest downloaded file for transcription."""
-
-        if self.config.getboolean("transcription", "enabled", fallback=False):
-            pass
-
-        pass
 
     def run(self) -> None:
         if not self.config or not self.stream_source_url:
@@ -103,27 +150,22 @@ class StreamMonitor(threading.Thread):
         while self.running:
             try:
                 if check_stream_live(self.stream_source_url):
-                    logger.info(f"{self.streamer_name} is live")
-                    video_title = None
-                    video_description = None
-                    video_path = ""
-
-                    # if self.config.getboolean("source", "api_calls", fallback=False):
-                    #     video_title, video_description = fetch_metadata(
-                    #         self.config["source"]["api_url"], self.streamer_name
-                    #     )
-
+                    logger.success(f"{self.streamer_name} is live!")
+                    
                     download_success, video_path = self.download_video()
 
                     if download_success:
                         logger.success(f"Stream for {self.streamer_name} downloaded successfully")
                         if video_path:
+                            # Process video
                             processor.process(video_path)
                         else:
-                            logger.warning("Downloaded file path not found, cannot process video")
+                            logger.error("Downloaded file path not found, cannot process video")
+                    else:
+                        logger.warning(f"Failed to download stream for {self.streamer_name}")
 
                 else:
-                    logger.info(f"{self.streamer_name} is offline. Retrying in {self.retry_delay} seconds...")
+                    logger.info(f"{self.streamer_name} is offline. Retrying in {self.retry_delay} seconds..")
             except Exception as e:
                 logger.error(f"Error monitoring {self.streamer_name}: {e}")
 

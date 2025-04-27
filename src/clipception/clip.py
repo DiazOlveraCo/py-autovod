@@ -82,26 +82,3 @@ def process_clips(input_file, output_dir, json_file, min_score=0):
             print(f"\nFailed to remove VOD file: {str(e)}")
     elif remove_vod and failed_clips:
         print(f"\nVOD file not removed due to failed clip extractions.")
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        description="Extract clips based on JSON configuration."
-    )
-    parser.add_argument("input_file", help="Input video file path")
-    parser.add_argument("output_dir", help="Output directory for clips")
-    parser.add_argument("json_file", help="JSON file containing clip information")
-    parser.add_argument(
-        "--min-score",
-        type=int,
-        default=0,
-        help="Minimum score threshold for clips (default: 0)",
-    )
-
-    args = parser.parse_args()
-
-    process_clips(args.input_file, args.output_dir, args.json_file, args.min_score)
-
-
-if __name__ == "__main__":
-    main()

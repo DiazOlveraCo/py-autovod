@@ -1,7 +1,6 @@
 from loguru import logger
 import sys
-
-DEBUG = True  # Debug flag for toggling debug logging
+from settings import DEBUG
 
 
 def debug_filter(record):
