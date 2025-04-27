@@ -6,7 +6,7 @@ import argparse
 from settings import config
 from dotenv import load_dotenv
 from clipception.transcription import process_video
-from src.clipception.gen_clip import generate_clips
+from clipception.gen_clip import generate_clips
 from clipception.clip import process_clips
 
 load_dotenv()

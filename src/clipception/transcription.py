@@ -106,7 +106,8 @@ def extract_audio(video_path):
         [
             "ffmpeg",
             "-loglevel",
-            "error" "-i",
+            "error",
+            "-i",
             str(video_file),
             "-vn",
             "-acodec",
