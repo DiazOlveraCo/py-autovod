@@ -88,6 +88,10 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
     max_retries = 4
     retry_delay = 2
 
+    # Get temperature and max_tokens from environment variables if available
+    temperature = float(os.getenv("LLM_TEMPERATURE", "0.5"))
+    max_tokens = int(os.getenv("LLM_MAX_TOKENS", "1000"))
+    
     for attempt in range(max_retries):
         try:
             completion = client.chat.completions.create(
@@ -99,8 +103,8 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
                     },
                     {"role": "user", "content": prompt},
                 ],
-                temperature=0.5,
-                max_tokens=1000,
+                temperature=temperature,
+                max_tokens=max_tokens,
             )
 
             if completion and completion.choices:

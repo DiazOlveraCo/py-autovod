@@ -221,7 +221,6 @@ def transcribe_with_features(model, audio_path, device: str, min_duration=40.0):
 
 def cleanup_files():
     """Clean up temporary files created during processing"""
-    pass
     global files_to_cleanup
     print("\nCleaning up temporary files...")
     for file_path in files_to_cleanup:
@@ -236,8 +235,18 @@ def cleanup_files():
 def process_video(video_path, model_size="base"):
     process_start = time.time()
 
-    # Device configuration
-    device = "cuda" if check_cuda() else "cpu"
+    # Device configuration - check for forced device from environment variable
+    forced_device = os.getenv("FORCE_DEVICE")
+    if forced_device:
+        if forced_device.lower() == "cuda":
+            device = "cuda" if check_cuda() else "cpu"
+            if device == "cpu":
+                print("Warning: CUDA requested but not available, falling back to CPU")
+        else:
+            device = "cpu"
+    else:
+        device = "cuda" if check_cuda() else "cpu"
+    
     print(f"\n{'='*40}")
     print(f"Processing on: {device.upper()}")
     print(f"{'='*40}\n")
@@ -282,37 +291,3 @@ def process_video(video_path, model_size="base"):
         cleanup_files()
 
 atexit.register(cleanup_files)
-
-# if __name__ == "__main__":
-#     # Register cleanup handler
-#     atexit.register(cleanup_files)
-
-#     # Set up argument parsing
-#     parser = argparse.ArgumentParser(
-#         description="Process video with enhanced Whisper transcription"
-#     )
-#     parser.add_argument(
-#         "--input", type=str, help="Path to the video file to process"
-#     )
-#     parser.add_argument(
-#         "--model",
-#         type=str,
-#         default="base",
-#         choices=["tiny", "base", "small", "medium", "large"],
-#         help="Whisper model size (default: base)",
-#     )
-
-#     args = parser.parse_args()
-
-#     if not Path(args.input).exists():
-#         print(f"Error: Input file {args.input} not found!")
-#         sys.exit(1)
-
-#     try:
-#         process_video(args.input, args.model)
-#     except KeyboardInterrupt:
-#         print("\nProcessing interrupted by user!")
-#         sys.exit(1)
-#     except Exception as e:
-#         print(f"\nCritical error occurred: {str(e)}")
-#         sys.exit(1)

@@ -1,7 +1,9 @@
 import sys
+import os
 import time
 import threading
 import subprocess
+import datetime
 from typing import Optional
 from logger import logger
 from utils import (
@@ -50,16 +52,18 @@ class StreamMonitor(threading.Thread):
 
         return True
 
-    def download_video(self, video_title: Optional[str] = None, video_description: Optional[str] = None) -> bool:
+    def download_video(self, video_title: Optional[str] = None, video_description: Optional[str] = None) -> tuple[bool, str]:
         if not self.config:
-            return False
+            return False, ""
 
         quality = self.config["streamlink"]["quality"]
-
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+        output_path = f"recordings/{self.streamer_name}/{{id}}/{self.streamer_name}-{current_time}.ts"
+        
         command = [
             "streamlink",
             "-o",
-            f"recordings/{{author}}/{{id}}/{{author}}-{{time:%Y-%m-%d-%H-%M-%S}}.ts",
+            output_path,
             self.stream_source_url,
             quality,
         ]
@@ -79,7 +83,7 @@ class StreamMonitor(threading.Thread):
         finally:
             self.current_process = None
 
-        return success
+        return success, output_path
 
     def _process(self) -> None:
         """Process the latest downloaded file for transcription."""
@@ -110,11 +114,15 @@ class StreamMonitor(threading.Thread):
                     #         self.config["source"]["api_url"], self.streamer_name
                     #     )
 
-                    download_success = self.download_video(video_title, video_description)
+                    download_success, video_path = self.download_video(video_title, video_description)
 
                     if download_success:
                         logger.success(f"Stream for {self.streamer_name} downloaded successfully")
-                        processor.process(video_path)
+                        if video_path:
+                            logger.info(f"Queuing video for processing: {video_path}")
+                            processor.process(video_path)
+                        else:
+                            logger.error("Downloaded file path not found, cannot process video")
 
                 else:
                     logger.info(f"{self.streamer_name} is offline. Retrying in {self.retry_delay} seconds...")
