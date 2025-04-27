@@ -11,9 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()  # This loads variables from .env into os.environ
 
 if not os.getenv("OPEN_ROUTER_KEY"):
-    print("Please set it with: export OPEN_ROUTER_KEY='your_key_here'")
-    raise ValueError("Error: OPEN_ROUTER_KEY environment variable is not set")
-
+    print("Please set env variable with: export OPEN_ROUTER_KEY='your_key_here'")
 
 def main() -> int:
     version = config.get("general", "version", fallback="1.0.0")
