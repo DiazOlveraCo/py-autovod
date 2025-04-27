@@ -36,9 +36,7 @@ def extract_clip(input_file, output_dir, clip_data):
 
 
 def process_clips(input_file, output_dir, json_file, min_score=0):
-    """
-    Process all clips from the JSON file that meet the minimum score requirement
-    """
+    """Process all clips from the JSON file that meet the minimum score requirement"""
 
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)

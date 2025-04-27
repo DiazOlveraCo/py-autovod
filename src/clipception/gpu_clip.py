@@ -79,17 +79,11 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
     - "Quotable" phrases
     - Discussion potential
 
-    For each clip, provide in this exact format:
-    1. Clip Name: "[TITLE]"
-    Start: [START]s, End: [END]s
-    Score: [1-10]
-    Factors: [Key viral factors]
-    Platforms: [Recommended platforms]
+    For each clip, return ONLY valid JSON following this exact structure:
+    {{\"clips\": [{{\"name\": \"[TITLE]\", \"start\": \"[START]\", \"end\": \"[END]\", \"score\": [1-10], \"factors\": \"[Key viral factors]\", \"platforms\": \"[Recommended platforms]\"}}]}}
 
-    Rank clips by viral potential. Focus on measurable features in the data.
+    Rank clips by viral potential. Focus on measurable features in the data. No commentary. No markdown. Pure JSON only.
     """
-    
-    print("CALLING RANK CLIPS CHUNK")
 
     max_retries = 4
     retry_delay = 2
@@ -101,16 +95,15 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a helpful assistant that ranks video clips. Keep explanations brief and focused on virality potential.",
+                        "content": "You are a helpful assistant that ranks video clips. Keep explanations brief and focused on virality potential. Follow the format exactly.",
                     },
                     {"role": "user", "content": prompt},
                 ],
-                temperature=0.7,
+                temperature=0.5, # Lower temperature for more structured output
                 max_tokens=1000,
             )
 
             if completion and completion.choices:
-                print(completion.choices[0].message.content)
                 return completion.choices[0].message.content
 
         except Exception as e:
@@ -128,14 +121,12 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
 
 
 def rank_all_clips_parallel(clips: List[Dict], chunk_size: int = 5, num_processes: int = None) -> List[Dict]:
-    """Rank clips in parallel using multiple processes and GPU acceleration."""
+    """Rank clips in parallel using multiple processes."""
     if num_processes is None:
         num_processes = mp.cpu_count()
 
     chunks = chunk_list(clips, chunk_size)
     chunk_data = [(chunk, i) for i, chunk in enumerate(chunks)]
-
-    print(json.dumps(chunk_data, indent=2))
 
     all_ranked_clips = []
 
@@ -163,50 +154,21 @@ def rank_all_clips_parallel(clips: List[Dict], chunk_size: int = 5, num_processe
 def parse_clip_data(input_string: str) -> list[dict]:
     if not input_string:
         return []
-
-    clips = []
-    current_clip = {}
-    lines: list[str] = input_string.split("\n")
-
-    for i in range(len(lines)):
-        line = lines[i].strip()
-        if not line:
-            continue
-
-        if re.match(r"^\d+\.\s\*\*Clip Name:", line):
-            if current_clip:
-                clips.append(current_clip)
-                current_clip = {}
-
-            name_match = re.search(r'Clip Name: "(.*?)"', line)
-            if name_match:
-                current_clip["name"] = name_match.group(1)
-
-        elif "Start:" in line and "End:" in line:
-            time_match = re.search(r"Start: ([\d.]+)s, End: ([\d.]+)s", line)
-            if time_match:
-                current_clip["start"] = float(time_match.group(1))
-                current_clip["end"] = float(time_match.group(2))
-
-        elif "Score:" in line:
-            score_match = re.search(r"Score: (\d+)", line)
-            if score_match:
-                current_clip["score"] = int(score_match.group(1))
-
-        elif "Factors:" in line:
-            factors_match = re.search(r"Factors: (.+)", line)
-            if factors_match:
-                current_clip["factors"] = factors_match.group(1)
-
-        elif "Platforms:" in line:
-            platforms_match = re.search(r"Platforms: (.+)", line)
-            if platforms_match:
-                current_clip["platforms"] = platforms_match.group(1)
-
-    if current_clip:
-        clips.append(current_clip)
-
-    return clips
+    cleaned_str = input_string.replace("```json","").replace("```","").strip()
+    try:
+        # Parse the JSON string into a Python list of dictionaries
+        clips = json.loads(cleaned_str)['clips']
+        
+        # Filter out invalid clip structures
+        clips = [
+            clip for clip in clips
+            if all(key in clip for key in ('name', 'start', 'end', 'score', 'factors', 'platforms'))
+        ]
+        
+        return clips
+    except (json.JSONDecodeError, ValueError) as e:
+        print(f"Error parsing clip data: {e}")
+        return []
 
 
 def save_top_clips_json(
@@ -231,13 +193,12 @@ def generate_clips(
     clips_json_path : str,
     output_file : str ,
     num_clips: int = 20,
-    chunk_size: int = 5,
+    chunk_size: int = 10,
     num_processes=None,
 ):
     global model_name
     model_name = model_name1
     start_time = time.time()
-
     clips : List[Dict] = load_clips(clips_json_path)
 
     try:
