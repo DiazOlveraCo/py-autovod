@@ -6,9 +6,7 @@ from datetime import datetime
 
 
 def extract_clip(input_file, output_dir, clip_data):
-    """
-    Extract a single clip based on the provided clip data
-    """
+    """Extract a single clip based on the provided clip data"""
     try:
         # Create sanitized filename from clip name
         safe_name = "".join(
@@ -63,7 +61,6 @@ def process_clips(input_file, output_dir, json_file, min_score=0):
     print(f"Total clips processed: {len(successful_clips) + len(failed_clips)}")
     print(f"Successfully extracted: {len(successful_clips)}")
     print(f"Failed extractions: {len(failed_clips)}")
-    remove_vod = False
 
     if successful_clips:
         print("\nSuccessful clips:")

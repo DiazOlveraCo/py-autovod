@@ -12,6 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 from tqdm import tqdm
 from dotenv import load_dotenv
+from settings import config
 
 load_dotenv()
 
@@ -21,7 +22,9 @@ if not API_KEY:
     print("Error: OPEN_ROUTER_KEY environment variable is not set")
     raise ValueError("Please set it with: export OPEN_ROUTER_KEY='your_key_here'")
 
-model_name = "deepseek/deepseek-chat"
+model_name = config.get("llm", "model_name")
+temperature = config.getfloat("llm", "temperature", fallback=0.5)
+max_tokens = config.getint("llm", "max_tokens", fallback=1000)
 
 
 def chunk_list(lst: List, chunk_size: int) -> List[List]:
@@ -88,10 +91,6 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
 
     max_retries = 4
     retry_delay = 2
-
-    # Get temperature and max_tokens from environment variables if available
-    temperature = float(os.getenv("LLM_TEMPERATURE", "0.5"))
-    max_tokens = int(os.getenv("LLM_MAX_TOKENS", "1000"))
 
     for attempt in range(max_retries):
         try:
@@ -200,15 +199,12 @@ def save_top_clips_json(
 
 
 def generate_clips(
-    model_name1: str,
     clips_json_path: str,
     output_file: str,
     num_clips: int = 20,
     chunk_size: int = 10,
     num_processes=None,
 ):
-    global model_name
-    model_name = model_name1
     start_time = time.time()
     clips: List[Dict] = load_clips(clips_json_path)
 

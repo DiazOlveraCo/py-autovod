@@ -29,11 +29,14 @@ import librosa
 import soundfile as sf
 import os
 import atexit
+from settings import config
 
 # Global list for cleanup
 files_to_cleanup = []
 MIN_DURATION = 50.0
 
+model_size = config.get("transcription", "model_size")
+device = config.get("transcription", "device")
 
 def format_time(seconds):
     """Convert seconds into human readable time string"""
@@ -223,20 +226,8 @@ def transcribe_with_features(model, audio_path, device: str, min_duration=MIN_DU
     return enhanced_segments
 
 
-def process_video(video_path, model_size="base"):
+def process_video(video_path):
     process_start = time.time()
-
-    # Device configuration - check for forced device from environment variable
-    forced_device = os.getenv("FORCE_DEVICE")
-    if forced_device:
-        if forced_device.lower() == "cuda":
-            device = "cuda" if check_cuda() else "cpu"
-            if device == "cpu":
-                print("Warning: CUDA requested but not available, falling back to CPU")
-        else:
-            device = "cpu"
-    else:
-        device = "cuda" if check_cuda() else "cpu"
 
     print(f"\n{'='*40}")
     print(f"Processing on: {device.upper()}")
@@ -281,4 +272,3 @@ def process_video(video_path, model_size="base"):
         # Cleanup operations
         if device == "cuda":
             torch.cuda.empty_cache()
-

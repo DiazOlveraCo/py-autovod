@@ -7,9 +7,11 @@ from pathlib import Path
 from logger import logger
 from settings import config
 from dotenv import load_dotenv
-from clipception.transcription import process_video
-from clipception.gen_clip import generate_clips
-from clipception.clip import process_clips
+
+# clipception
+from transcription import process_video
+from gen_clip import generate_clips
+from clip import process_clips
 
 
 class Processor:
@@ -73,16 +75,8 @@ class Processor:
             model_size = config.get("transcription", "model_size")
             device = config.get("transcription", "device")
 
-            # LLM settings
-            model_name = config.get("llm", "model_name")
-            temperature = config.getfloat("llm", "temperature", fallback=0.5)
-            max_tokens = config.getint("llm", "max_tokens", fallback=1000)
-
             logger.info(f"Processing video: {video_path}")
-            logger.info(f"Using transcription model: {model_size} on {device}")
-            logger.info(
-                f"Using LLM model: {model_name} (temp: {temperature}, max tokens: {max_tokens})"
-            )
+
 
             # Ensure the video file exists
             if not os.path.exists(video_path):
@@ -97,9 +91,7 @@ class Processor:
             logger.info("Step 1: Generating enhanced transcription...")
 
             try:
-                # Override device detection with config setting
-                os.environ["FORCE_DEVICE"] = device
-                process_video(video_path, model_size=model_size)
+                process_video(video_path)
             except Exception as e:
                 logger.error(f"Error during transcription: {str(e)}")
                 return
@@ -119,12 +111,7 @@ class Processor:
             output_file = os.path.join(output_dir, "top_clips_one.json")
 
             try:
-                # Set environment variables for LLM parameters
-                os.environ["LLM_TEMPERATURE"] = str(temperature)
-                os.environ["LLM_MAX_TOKENS"] = str(max_tokens)
-
                 generate_clips(
-                    model_name,
                     transcription_json,
                     output_file,
                     num_clips=num_clips,

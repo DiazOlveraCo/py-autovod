@@ -5,9 +5,10 @@ from pathlib import Path
 import argparse
 from settings import config
 from dotenv import load_dotenv
-from clipception.transcription import process_video
-from clipception.gen_clip import generate_clips
-from clipception.clip import process_clips
+
+from transcription import process_video
+from gen_clip import generate_clips
+from clip import process_clips
 
 load_dotenv()
 
@@ -22,8 +23,6 @@ def main():
     num_clips = 10
     min_score = 0
     chunk_size = 15
-    model_size = config.get("transcription", "model_size")
-    model_name = config.get("llm", "model_name")
 
     parser = argparse.ArgumentParser(
         description="Process a video to generate clips based on transcription analysis.",
@@ -50,7 +49,7 @@ def main():
     # Step 1: Run enhanced transcription
     print("\nStep 1: Generating enhanced transcription..")
 
-    process_video(video_path, model_size=model_size)
+    process_video(video_path)
 
     transcription_json = os.path.join(
         output_dir, f"{filename_without_ext}.enhanced_transcription.json"
@@ -67,7 +66,7 @@ def main():
     output_file = os.path.join(output_dir, "top_clips_one.json")
 
     generate_clips(
-        model_name, transcription_json, output_file, num_clips=num_clips, chunk_size=chunk_size
+        transcription_json, output_file, num_clips=num_clips, chunk_size=chunk_size
     )
 
     if not os.path.exists(output_file):
