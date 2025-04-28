@@ -19,8 +19,9 @@ Manually install ffmpeg and streamlink. Alternatively, you can do the installati
 
 ## Setup
 
-1. Python 3.9+ is required. Install the required Python packages:
+1. Python 3.9+ is required. Set up a Python virtual environment, then install the required packages:
    ```bash
+   python -m venv . 
    pip install -r requirements.txt
    ```
 
