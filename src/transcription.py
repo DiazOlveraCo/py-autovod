@@ -238,8 +238,7 @@ def process_video(video_path):
 
     try:
         # Audio extraction
-        # audio_path = extract_audio(video_path)
-        audio_path = "downloads/You_Talkin_To_Me_How_To_Handle_Mouthy_Realtors_Scuffed_Realtor_LIVE.wav"
+        audio_path = extract_audio(video_path)
 
         # Model loading
         print(f"Loading Whisper {model_size} model...")
