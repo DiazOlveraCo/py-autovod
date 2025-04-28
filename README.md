@@ -20,7 +20,7 @@ A Python implementation of [AutoVOD](https://github.com/jenslys/AutoVOD) with so
 2. Python 3.9+ is required. Set up a Python virtual environment, then install the required packages:
    ```bash
    python -m venv .
-   pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
    pip install -r requirements.txt
    ```
    
