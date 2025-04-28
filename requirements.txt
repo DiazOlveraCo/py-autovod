@@ -5,12 +5,12 @@ yt-dlp
 openai==1.76.0
 openai-whisper @ git+https://github.com/openai/whisper.git@517a43ecd132a2089d85f4ebc044728a71d49f6e
 requests==2.32.3
-torch==2.7.0
 python-dotenv==1.1.0
 soundfile==0.13.1
 pydub==0.25.1
 librosa==0.11.0
 soundfile==0.13.1
-torchaudio
-torchvision
+torch==2.5.1+cu121
+torchaudio==2.5.1+cu121
+torchvision==0.20.1+cu121
 tqdm==4.67.1

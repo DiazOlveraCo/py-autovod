@@ -185,6 +185,9 @@ def transcribe_with_features(model, audio_path, device: str, min_duration=MIN_DU
     # Configure FP16 based on CUDA support
     fp16 = device == "cuda" and torch.cuda.is_bf16_supported()
 
+    if device=="cuda":
+        torch.cuda.init()
+
     result = model.transcribe(str(audio_path), language="en", fp16=fp16)
 
     current_segments = []
@@ -224,22 +227,26 @@ def transcribe_with_features(model, audio_path, device: str, min_duration=MIN_DU
 
 
 def process_video(video_path):
+    global device
+
+    if not check_cuda():
+        device = "cpu"
+
     process_start = time.time()
-
-    print(f"\n{'='*40}")
-    print(f"Processing on: {device.upper()}")
-    print(f"{'='*40}\n")
-
     video_file = Path(video_path)
     transcription_path = video_file.with_suffix(".enhanced_transcription.json")
 
     try:
         # Audio extraction
-        audio_path = extract_audio(video_path)
+        # audio_path = extract_audio(video_path)
+        audio_path = "downloads/You_Talkin_To_Me_How_To_Handle_Mouthy_Realtors_Scuffed_Realtor_LIVE.wav"
 
         # Model loading
         print(f"Loading Whisper {model_size} model...")
-        model = whisper.load_model(model_size).to(device)
+        model = whisper.load_model(model_size, device=device)
+        
+        # Verify model device
+        print(f"Model is on device: {next(model.parameters()).device}")
 
         if device == "cuda":
             print(

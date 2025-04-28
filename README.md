@@ -13,19 +13,17 @@ A Python implementation of [AutoVOD](https://github.com/jenslys/AutoVOD) with so
 - ( :x: ) Archive both video and chat logs
 - ( :heavy_check_mark: ) Platform independent and Docker supported
 
-## Installation
+## Installation & Setup
 
-Manually install ffmpeg and streamlink. Alternatively, you can do the installation automatically with `install.sh`.
+1. Manually install ffmpeg and streamlink. Alternatively, you can do the installation automatically with `install.sh`.
 
-## Setup
-
-1. Python 3.9+ is required. Set up a Python virtual environment, then install the required packages:
+2. Python 3.9+ is required. Set up a Python virtual environment, then install the required packages:
    ```bash
    python -m venv . 
    pip install -r requirements.txt
    ```
-
-2. Configure the streamers you want to monitor in `config.ini`:
+   
+3. Configure the streamers you want to monitor in `config.ini`:
    ```ini
    [streamers]
    streamers = streamer1, streamer2, streamer3
