@@ -4,19 +4,10 @@ import sys
 from pathlib import Path
 import argparse
 from settings import config
-from dotenv import load_dotenv
 
 from transcription import process_video
 from gen_clip import generate_clips
 from clip import process_clips
-
-load_dotenv()
-
-# Check for OpenRouter API key
-if not os.getenv("OPEN_ROUTER_KEY"):
-    print("Error: OPEN_ROUTER_KEY environment variable is not set")
-    print("Please set it with: export OPEN_ROUTER_KEY='your_key_here'")
-    sys.exit(1)
 
 
 def main():

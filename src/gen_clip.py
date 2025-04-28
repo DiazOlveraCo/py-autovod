@@ -11,16 +11,8 @@ import multiprocessing as mp
 from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 from tqdm import tqdm
-from dotenv import load_dotenv
-from settings import config
+from settings import config, API_KEY
 
-load_dotenv()
-
-API_KEY = os.getenv("OPEN_ROUTER_KEY")
-
-if not API_KEY:
-    print("Error: OPEN_ROUTER_KEY environment variable is not set")
-    raise ValueError("Please set it with: export OPEN_ROUTER_KEY='your_key_here'")
 
 model_name = config.get("clipception.llm", "model_name", fallback="deepseek/deepseek-chat")
 temperature = config.getfloat("clipception.llm", "temperature", fallback=0.5)

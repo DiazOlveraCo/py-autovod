@@ -4,14 +4,7 @@ import os
 import sys
 import argparse
 from logger import logger
-from stream_manager import StreamManager
 from settings import config
-from dotenv import load_dotenv
-
-load_dotenv()  # This loads variables from .env into os.environ
-
-if not os.getenv("OPEN_ROUTER_KEY"):
-    print("Please set env variable with: export OPEN_ROUTER_KEY='your_key_here'")
 
 
 def main() -> int:
@@ -40,6 +33,8 @@ def main() -> int:
     if args.version:
         print(f"Version: {version}")
         return 0
+    
+    from stream_manager import StreamManager
 
     manager = StreamManager()
     manager.start(args.name) if args.name else manager.start()
