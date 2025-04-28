@@ -20,7 +20,7 @@ if not os.getenv("OPEN_ROUTER_KEY"):
 
 
 def main():
-    num_clips = 10
+    num_clips = config.getint("clipception", "num_clips", fallback=10)
     min_score = 0
     chunk_size = 15
 

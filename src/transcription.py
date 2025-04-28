@@ -19,7 +19,6 @@ except ImportError:
 # Standard imports
 from pathlib import Path
 import json
-import argparse
 import subprocess
 import time
 import numpy as np
@@ -27,16 +26,14 @@ from datetime import timedelta
 from pydub import AudioSegment
 import librosa
 import soundfile as sf
-import os
-import atexit
 from settings import config
 
 # Global list for cleanup
 files_to_cleanup = []
-MIN_DURATION = 50.0
+MIN_DURATION = config.get("clipception","clip_duration")
+model_size = config.get("clipception.transcription", "model_size")
+device = config.get("clipception.transcription", "device")
 
-model_size = config.get("transcription", "model_size")
-device = config.get("transcription", "device")
 
 def format_time(seconds):
     """Convert seconds into human readable time string"""

@@ -157,8 +157,8 @@ class StreamMonitor(threading.Thread):
                             f"Stream for {self.streamer_name} downloaded successfully"
                         )
                         if video_path:
-                            # Process video
-                            processor.process(video_path)
+                            # Process video with streamer name
+                            processor.process(video_path, self.streamer_name,self.config)
                         else:
                             logger.error(
                                 "Downloaded file path not found, cannot process video"

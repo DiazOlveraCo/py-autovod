@@ -22,9 +22,9 @@ if not API_KEY:
     print("Error: OPEN_ROUTER_KEY environment variable is not set")
     raise ValueError("Please set it with: export OPEN_ROUTER_KEY='your_key_here'")
 
-model_name = config.get("llm", "model_name")
-temperature = config.getfloat("llm", "temperature", fallback=0.5)
-max_tokens = config.getint("llm", "max_tokens", fallback=1000)
+model_name = config.get("clipception.llm", "model_name", fallback="deepseek/deepseek-chat")
+temperature = config.getfloat("clipception.llm", "temperature", fallback=0.5)
+max_tokens = config.getint("clipception.llm", "max_tokens", fallback=1000)
 
 
 def chunk_list(lst: List, chunk_size: int) -> List[List]:
