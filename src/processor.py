@@ -86,7 +86,6 @@ class Processor:
         try: 
             # Full output path
             output_path = ""
-            
             codec = streamer_config.get("encoding", "codec", fallback="libx265")
             crf = streamer_config.get("encoding", "crf", fallback="25")
             preset = streamer_config.get("encoding", "preset", fallback="medium")

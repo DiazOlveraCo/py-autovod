@@ -11,6 +11,9 @@ import os
 import argparse
 from pathlib import Path
 
+# ffmpeg -i input.mp4 -vf "scale=1080:1920:force_original_aspect_ratio=increase,blur=20[bg];[bg][0:v]scale=1080:1920:force_original_aspect_ratio=decrease[scaled];[scaled]pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black@0,setsar=1" -c:a copy output.mp4
+
+# ffmpeg -i input.mp4 -vf "crop=ih*9/16:ih,scale=1080:1920" -c:a copy output.mp4
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Download YouTube videos")

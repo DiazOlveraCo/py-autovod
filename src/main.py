@@ -5,6 +5,7 @@ import sys
 import argparse
 from logger import logger
 from settings import config
+from stream_manager import StreamManager
 
 
 def main() -> int:
@@ -33,8 +34,6 @@ def main() -> int:
     if args.version:
         print(f"Version: {version}")
         return 0
-    
-    from stream_manager import StreamManager
 
     manager = StreamManager()
     manager.start(args.name) if args.name else manager.start()

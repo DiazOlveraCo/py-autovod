@@ -30,9 +30,7 @@ def main():
     if args.video_path:
         video_path = args.video_path
     else:
-        video_path = (
-            "recordings/pokelawls/319835831420/pokelawls-2025-04-19-17-36-00.ts"
-        )
+        video_path = ""
 
     filename_without_ext = os.path.splitext(os.path.basename(video_path))[0]
     output_dir = os.path.dirname(video_path)

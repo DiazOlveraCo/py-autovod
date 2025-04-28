@@ -30,7 +30,7 @@ from settings import config
 
 # Global list for cleanup
 files_to_cleanup = []
-MIN_DURATION = config.get("clipception","clip_duration")
+MIN_DURATION = config.getfloat("clipception","clip_duration")
 model_size = config.get("clipception.transcription", "model_size")
 device = config.get("clipception.transcription", "device")
 
