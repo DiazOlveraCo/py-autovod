@@ -35,9 +35,9 @@ Manually install ffmpeg and streamlink. Alternatively, you can do the installati
 
 5. Configure the main configuration file `config.ini`. Downloaded VODs are processed into clips by default.
 
-. Copy the `.env.example` file to a new file called `.env`. Fill in the .env file with your API keys.
+6. Copy the `.env.example` file to a new file called `.env`. Fill in the .env file with your API keys.
 
-4. Run the command to start AutoVOD:
+7. Run the command to start AutoVOD:
    ```bash
    python3 src/main.py
    ```
