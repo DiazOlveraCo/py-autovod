@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     tzdata \
     xvfb \
-    pm2 \
     ffmpeg \
     streamlink \
 && rm -rf /var/lib/apt/lists/*
