@@ -105,6 +105,7 @@ class StreamManager:
                     cur_size = get_size(recordings_dir)
                     speed = cur_size - prev_size
                     prev_size = cur_size
+                    speed = max(speed, 0)
                     total += speed
 
                     # Set postfix to current speed

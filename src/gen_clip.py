@@ -53,7 +53,7 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
     client = OpenAI(
         base_url="https://openrouter.ai/api/v1",
         api_key=API_KEY,
-        default_headers={"HTTP-Referer": "http://localhost", "X-Title": "Local Test"},
+        default_headers={"HTTP-Referer": "http://localhost", "X-Title": "Py-AutoVod"},
     )
 
     prompt = f"""
