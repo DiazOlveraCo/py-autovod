@@ -105,7 +105,6 @@ class StreamMonitor(threading.Thread):
             command.extend(flags)
 
         try:
-
             # Start the download process
             self.current_process = subprocess.Popen(
                 command, stdout=sys.stdout, stderr=subprocess.DEVNULL

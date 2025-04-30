@@ -11,7 +11,16 @@ import os
 import argparse
 from pathlib import Path
 
+# Import yt-dlp here to avoid import error if not installed
+try:
+    import yt_dlp
+except ImportError:
+    print("Error: yt-dlp is not installed.")
+    print("Please install it using: pip install yt-dlp")
+
 # ffmpeg -i input.mp4 -vf "scale=1080:1920:force_original_aspect_ratio=increase,blur=20[bg];[bg][0:v]scale=1080:1920:force_original_aspect_ratio=decrease[scaled];[scaled]pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black@0,setsar=1" -c:a copy output.mp4
+
+# ffmpeg -i input.mp4 -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1" -c:a copy output.mp4
 
 # ffmpeg -i input.mp4 -vf "crop=ih*9/16:ih,scale=1080:1920" -c:a copy output.mp4
 
@@ -39,14 +48,6 @@ def download_video(url, output_dir, format_option):
     """
     try:
         os.makedirs(output_dir, exist_ok=True)
-
-        # Import yt-dlp here to avoid import error if not installed
-        try:
-            import yt_dlp
-        except ImportError:
-            print("Error: yt-dlp is not installed.")
-            print("Please install it using: pip install yt-dlp")
-            return False
 
         # Configure yt-dlp options
         ydl_opts = {

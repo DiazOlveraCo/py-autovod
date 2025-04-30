@@ -95,6 +95,9 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
                     },
                     {"role": "user", "content": prompt},
                 ],
+                response_format = {
+                    'type': 'json_object'
+                },
                 temperature=temperature,
                 max_tokens=max_tokens,
             )
