@@ -70,10 +70,10 @@ def fetch_metadata(streamer_url: str) -> dict:
         return json.loads(result.stdout)['metadata']
     except subprocess.CalledProcessError as e:
         print(f"Streamlink error: {e.stderr}")
-        return None, None
+        return None
     except json.JSONDecodeError as e:
         print(f"JSON decode error: {e}")
-        return None, None
+        return None
 
 
 def load_config(config_name: str) -> Optional[configparser.ConfigParser]:
