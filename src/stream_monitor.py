@@ -6,7 +6,7 @@ import subprocess
 import datetime
 from typing import Optional
 from logger import logger
-from utils import determine_source, check_stream_live, load_config
+from utils import determine_source, check_stream_live, load_config, fetch_metadata
 from processor import processor
 
 
@@ -19,6 +19,7 @@ class StreamMonitor(threading.Thread):
         self.retry_delay = retry_delay
         self.running = False
         self.config = None
+        self.stream_metadata = {}
         self.stream_source_url = None
         self.current_process = None  # Store the running streamlink subprocess
         self._load_configuration()
@@ -90,8 +91,9 @@ class StreamMonitor(threading.Thread):
             return False, ""
 
         quality = self.config["streamlink"]["quality"]
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-        output_path = f"recordings/{self.streamer_name}/{{id}}/{self.streamer_name}-{current_time}.ts"
+        current_time = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+        stream_title = self.stream_metadata.get("title","")
+        output_path = f"recordings/{self.streamer_name}/{{id}}/{stream_title}-{self.streamer_name}{current_time}.ts"
 
         # Ensure the base directory exists
         base_dir = f"recordings/{self.streamer_name}"
@@ -149,6 +151,7 @@ class StreamMonitor(threading.Thread):
                 if check_stream_live(self.stream_source_url):
                     logger.success(f"{self.streamer_name} is live!")
 
+                    self.stream_metadata = fetch_metadata(self.stream_source_url)
                     download_success, video_path = self.download_video()
 
                     if download_success:

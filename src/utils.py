@@ -3,6 +3,7 @@ import subprocess
 from typing import List, Optional, Tuple, Dict
 from logger import logger
 import configparser
+import json
 
 
 def run_command(
@@ -16,7 +17,7 @@ def run_command(
 
     logger.debug(f"Executing: {' '.join(cmd)}")
     try:
-        return subprocess.run(cmd, stdout=stdout, stderr=stderr)
+        return subprocess.run(cmd, stdout=stdout, stderr=stderr, check=True)
     except subprocess.CalledProcessError as e:
         logger.error(f"Command failed with error: {e}")
         return subprocess.CompletedProcess(cmd, -1)
@@ -58,14 +59,21 @@ def get_size(path: str) -> float:
     return bytes_total / 1_000_000  # Convert to MB
 
 
-def fetch_metadata(api_url: str, streamer_name: str) -> Tuple[str, str]:
-    # TODO: Implement this function properly
-    # streamlink --json twitch.tv/bobross | jq .metadata
-    if not api_url:
+def fetch_metadata(streamer_url: str) -> dict:
+    try:
+        result = subprocess.run(
+            ["streamlink", "--json", streamer_url],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return json.loads(result.stdout)['metadata']
+    except subprocess.CalledProcessError as e:
+        print(f"Streamlink error: {e.stderr}")
         return None, None
-
-    # Placeholder for actual implementation
-    return None, None
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
+        return None, None
 
 
 def load_config(config_name: str) -> Optional[configparser.ConfigParser]:
