@@ -58,7 +58,7 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
 
     prompt = f"""
     You are an expert content analyzer focusing on viral clip potential. 
-    You can combine clips to form a longer clip, with the longest clip being 1 minute. Analyze these clips:
+    You can combine clips together to form a longer clip. Analyze these clips:
 
     {json.dumps(clips, indent=2)}
 
@@ -148,7 +148,6 @@ def rank_all_clips_parallel(
 
     # pbar.close()
 
-    # Final sorting of all clips
     return sorted(all_ranked_clips, key=lambda x: x.get("score", 0), reverse=True)
 
 

@@ -21,7 +21,7 @@ def run_command(
     except subprocess.CalledProcessError as e:
         logger.error(f"Command failed with error: {e}")
         return subprocess.CompletedProcess(cmd, -1)
-
+    
 
 def is_docker() -> bool:
     return os.path.exists("/.dockerenv")
