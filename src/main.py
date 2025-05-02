@@ -30,7 +30,7 @@ def main() -> int:
         except Exception as e:
             print(f"Failed to create recordings directory: {e}")
             return 1
-    
+
     if args.version:
         print(f"Version: {version}")
         return 0

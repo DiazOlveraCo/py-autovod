@@ -3,6 +3,7 @@ import sys
 
 DEBUG = True
 
+
 def debug_filter(record):
     return DEBUG or record["level"].name != "debug"
 

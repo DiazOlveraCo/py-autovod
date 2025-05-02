@@ -24,6 +24,7 @@ except ImportError:
 
 # ffmpeg -i input.mp4 -vf "crop=ih*9/16:ih,scale=1080:1920" -c:a copy output.mp4
 
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Download YouTube videos")
     parser.add_argument("url", help="YouTube video URL")
@@ -51,13 +52,13 @@ def download_video(url, output_dir, format_option):
 
         # Configure yt-dlp options
         ydl_opts = {
-            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-            'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
-            'merge_output_format': 'mp4',  # Ensures final output is MP4
-            'quiet': False,
-            'progress': True,
-            'no_warnings': False,
-            'restrictfilenames': True,  # Avoids special characters in filenames
+            "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+            "outtmpl": os.path.join(output_dir, "%(title)s.%(ext)s"),
+            "merge_output_format": "mp4",  # Ensures final output is MP4
+            "quiet": False,
+            "progress": True,
+            "no_warnings": False,
+            "restrictfilenames": True,  # Avoids special characters in filenames
         }
 
         # Download the video

@@ -14,7 +14,9 @@ from tqdm import tqdm
 from settings import config, API_KEY
 
 
-model_name = config.get("clipception.llm", "model_name", fallback="deepseek/deepseek-chat")
+model_name = config.get(
+    "clipception.llm", "model_name", fallback="deepseek/deepseek-chat"
+)
 temperature = config.getfloat("clipception.llm", "temperature", fallback=0.5)
 max_tokens = config.getint("clipception.llm", "max_tokens", fallback=1000)
 
@@ -95,9 +97,7 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
                     },
                     {"role": "user", "content": prompt},
                 ],
-                response_format = {
-                    'type': 'json_object'
-                },
+                response_format={"type": "json_object"},
                 temperature=temperature,
                 max_tokens=max_tokens,
             )

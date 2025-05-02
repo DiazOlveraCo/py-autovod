@@ -30,7 +30,7 @@ from settings import config
 
 # Global list for cleanup
 files_to_cleanup = []
-MIN_DURATION = config.getfloat("clipception","clip_duration")
+MIN_DURATION = config.getfloat("clipception", "clip_duration")
 model_size = config.get("clipception.transcription", "model_size")
 device = config.get("clipception.transcription", "device")
 
@@ -185,7 +185,7 @@ def transcribe_with_features(model, audio_path, device: str, min_duration=MIN_DU
     # Configure FP16 based on CUDA support
     fp16 = device == "cuda" and torch.cuda.is_bf16_supported()
 
-    if device=="cuda":
+    if device == "cuda":
         torch.cuda.init()
 
     result = model.transcribe(str(audio_path), language="en", fp16=fp16)
@@ -243,7 +243,7 @@ def process_video(video_path):
         # Model loading
         print(f"Loading Whisper {model_size} model...")
         model = whisper.load_model(model_size, device=device)
-        
+
         # Verify model device
         print(f"Model is on device: {next(model.parameters()).device}")
 

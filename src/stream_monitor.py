@@ -92,7 +92,7 @@ class StreamMonitor(threading.Thread):
 
         quality = self.config["streamlink"]["quality"]
         current_time = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-        stream_title = self.stream_metadata.get("title","")
+        stream_title = self.stream_metadata.get("title", "")
         output_path = f"recordings/{self.streamer_name}/{{id}}/{stream_title}-{self.streamer_name}{current_time}.ts"
 
         # Ensure the base directory exists
@@ -160,7 +160,9 @@ class StreamMonitor(threading.Thread):
                         )
                         if video_path:
                             # Process video with streamer name
-                            processor.process(video_path, self.streamer_name,self.config)
+                            processor.process(
+                                video_path, self.streamer_name, self.config
+                            )
                         else:
                             logger.error(
                                 "Downloaded file path not found, cannot process video"
