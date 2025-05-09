@@ -65,9 +65,9 @@ def fetch_metadata(streamer_url: str) -> dict:
             ["streamlink", "--json", streamer_url],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
-        return json.loads(result.stdout)['metadata']
+        return json.loads(result.stdout)["metadata"]
     except subprocess.CalledProcessError as e:
         print(f"Streamlink error: {e.stderr}")
         return None

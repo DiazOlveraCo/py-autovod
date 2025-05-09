@@ -51,19 +51,21 @@ class Processor:
             # Convert and re-encode if configured
             try:
                 # Convert .ts to a new format
-                if streamer_config.getboolean("local","save_locally"):
+                if streamer_config.getboolean("local", "save_locally"):
                     new_video_path = self._convert(video_path)
-                
-                if streamer_config.getboolean("encoding","re_encode"): 
+
+                if streamer_config.getboolean("encoding", "re_encode"):
                     new_video_path = self._encode(new_video_path, streamer_config)
-                    
+
                 if new_video_path:
                     logger.debug(f"Video saved locally: {new_video_path}")
             except Exception as e:
                 logger.error(f"Error encoding/saving video locally: {str(e)}")
 
             # Process with clipception
-            if config.getboolean("clipception","enabled") and streamer_config.getboolean("clipception","enabled"): 
+            if config.getboolean(
+                "clipception", "enabled"
+            ) and streamer_config.getboolean("clipception", "enabled"):
                 self._process_single_file(new_video_path, streamer_name)
 
             logger.info(f"Finished processing: {new_video_path}")
@@ -73,7 +75,7 @@ class Processor:
     def _convert(self, input_path: str) -> str:
         """Converts a file to a new format using ffmpeg."""
 
-        output_path = os.path.splitext(input_path)[0] + '.mp4'
+        output_path = os.path.splitext(input_path)[0] + ".mp4"
 
         command = ['ffmpeg', '-i', input_path, '-c', 'copy', output_path,"-loglevel","error"]
         run_command(command)
@@ -86,38 +88,43 @@ class Processor:
 
         return output_path
 
-
     def _encode(self, video_path, streamer_config):
-        try: 
+        try:
             output_path = ""
             codec = streamer_config.get("encoding", "codec", fallback="libx265")
             crf = streamer_config.get("encoding", "crf", fallback="25")
             preset = streamer_config.get("encoding", "preset", fallback="medium")
             log_level = streamer_config.get("encoding", "log", fallback="error")
-            
+
             # Build FFmpeg command
             ffmpeg_cmd = [
                 "ffmpeg",
-                "-i", video_path,
-                "-c:v", codec,
-                "-crf", crf,
-                "-preset", preset,
-                "-c:a", "copy",  # Copy audio stream
-                "-loglevel", log_level,
-                output_path
+                "-i",
+                video_path,
+                "-c:v",
+                codec,
+                "-crf",
+                crf,
+                "-preset",
+                preset,
+                "-c:a",
+                "copy",  # Copy audio stream
+                "-loglevel",
+                log_level,
+                output_path,
             ]
-            
+
             # Execute FFmpeg command
             logger.info(f"Re-encoding video with FFmpeg: {' '.join(ffmpeg_cmd)}")
             result = run_command(ffmpeg_cmd)
-            
+
             if result.returncode != 0:
                 logger.error(f"FFmpeg encoding failed: {result.stderr}")
                 return None
-            
+
             logger.success(f"Video saved locally: {output_path}")
             return output_path
-        
+
         except Exception as e:
             logger.error(f"Error encoding/saving video locally: {str(e)}")
             return None
@@ -125,10 +132,12 @@ class Processor:
     def _process_single_file(self, video_path, streamer_name=None):
         """Process a video file with clipception to generate clips."""
         try:
-            num_clips = config.getint("clipception", "num_clips", fallback=10)  # Default number of clips to generate
+            num_clips = config.getint(
+                "clipception", "num_clips", fallback=10
+            )  # Default number of clips to generate
             min_score = 0  # Default minimum score threshold
             chunk_size = 10
-            
+
             logger.info(f"Processing video: {video_path}")
 
             # Ensure the video file exists
