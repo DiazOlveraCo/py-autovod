@@ -12,14 +12,14 @@ def run_command(
     stderr: Optional[int] = subprocess.DEVNULL,
 ) -> subprocess.CompletedProcess:
     if not cmd:
-        logger.error("Command list is empty")
+        logger.warning("Command list is empty")
         return subprocess.CompletedProcess([], -1)
 
     logger.debug(f"Executing: {' '.join(cmd)}")
     try:
         return subprocess.run(cmd, stdout=stdout, stderr=stderr, check=True)
     except subprocess.CalledProcessError as e:
-        logger.error(f"Command failed with error: {e}")
+        logger.debug(f"Command failed with error: {e}")
         return subprocess.CompletedProcess(cmd, -1)
 
 

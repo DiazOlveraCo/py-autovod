@@ -6,7 +6,7 @@ from settings import config
 from utils import run_command
 
 # clipception
-from transcription import process_video
+from transcription import process_video,MIN_DURATION
 from gen_clip import generate_clips
 from clip import process_clips
 
@@ -76,15 +76,19 @@ class Processor:
         output_path = os.path.splitext(input_path)[0] + '.mp4'
 
         command = ['ffmpeg', '-i', input_path, '-c', 'copy', output_path,"-loglevel","error"]
-
         run_command(command)
+
+        if MIN_DURATION < 130:
+            command = ['ffmpeg', '-i', output_path,
+                '-vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1"''-c', 
+                'copy', "s"+output_path,"-loglevel","error"]
+            run_command(command)
 
         return output_path
 
 
     def _encode(self, video_path, streamer_config):
         try: 
-            # Full output path
             output_path = ""
             codec = streamer_config.get("encoding", "codec", fallback="libx265")
             crf = streamer_config.get("encoding", "crf", fallback="25")
