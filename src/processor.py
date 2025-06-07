@@ -21,7 +21,7 @@ class Processor:
 
     def __init__(self):
         if not hasattr(self, "initialized"):
-            self.video_queue = queue.Queue()
+            self.queue = queue.Queue()
             self.processing = False
             self.initialized = True
 
@@ -34,8 +34,8 @@ class Processor:
 
         logger.debug(f"Queuing video: {video_path}")
 
-        # Add both video path and streamer name to the queue
-        self.video_queue.put((video_path, streamer_name, streamer_config))
+        # Add to the queue
+        self.queue.put((video_path, streamer_name, streamer_config))
 
         if not self.processing:
             threading.Thread(target=self._process_queue, daemon=True).start()
@@ -43,8 +43,8 @@ class Processor:
     def _process_queue(self):
         """Process in the queue one by one."""
         self.processing = True
-        while not self.video_queue.empty():
-            video_path, streamer_name, streamer_config = self.video_queue.get()
+        while not self.queue.empty():
+            video_path, streamer_name, streamer_config = self.queue.get()
             new_video_path = video_path
             logger.info(f"Processing video: {video_path}")
 
@@ -63,13 +63,11 @@ class Processor:
                 logger.error(f"Error encoding/saving video locally: {str(e)}")
 
             # Process with clipception
-            if config.getboolean(
-                "clipception", "enabled"
-            ) and streamer_config.getboolean("clipception", "enabled"):
+            if config.getboolean("clipception", "enabled") and streamer_config.getboolean("clipception", "enabled"):
                 self._process_single_file(new_video_path, streamer_name)
 
             logger.info(f"Finished processing: {new_video_path}")
-            self.video_queue.task_done()
+            self.queue.task_done()
         self.processing = False
 
     def _convert(self, input_path: str) -> str:
@@ -121,10 +119,10 @@ class Processor:
             if result.returncode != 0:
                 logger.error(f"FFmpeg encoding failed: {result.stderr}")
                 return None
-
+            
             logger.success(f"Video saved locally: {output_path}")
             return output_path
-
+        
         except Exception as e:
             logger.error(f"Error encoding/saving video locally: {str(e)}")
             return None
@@ -132,9 +130,7 @@ class Processor:
     def _process_single_file(self, video_path, streamer_name=None):
         """Process a video file with clipception to generate clips."""
         try:
-            num_clips = config.getint(
-                "clipception", "num_clips", fallback=10
-            )  # Default number of clips to generate
+            num_clips = config.getint("clipception", "num_clips", fallback=10) 
             min_score = 0  # Default minimum score threshold
             chunk_size = 10
 
@@ -150,7 +146,7 @@ class Processor:
             output_dir = os.path.dirname(video_path)
 
             # Step 1: Run enhanced transcription
-            logger.info("Step 1: Generating enhanced transcription...")
+            logger.info("STEP 1: Generating enhanced transcription...")
 
             try:
                 process_video(video_path)
@@ -168,7 +164,7 @@ class Processor:
                 return
 
             # Step 2: Generate clips JSON using GPU acceleration
-            logger.info("Step 2: Processing transcription for clip selection...")
+            logger.info("STEP 2: Processing transcription for clip selection...")
 
             output_file = os.path.join(output_dir, "top_clips_one.json")
 
@@ -188,7 +184,7 @@ class Processor:
                 return
 
             # Step 3: Extract video clips
-            logger.info("Step 3: Extracting clips...")
+            logger.info("STEP 3: Extracting clips...")
             clips_output_dir = os.path.join(output_dir, "clips")
 
             try:

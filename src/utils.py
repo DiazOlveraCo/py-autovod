@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple, Dict
 from logger import logger
 import configparser
 import json
-
+import time
 
 def run_command(
     cmd: List[str],
@@ -61,6 +61,7 @@ def get_size(path: str) -> float:
 
 def fetch_metadata(streamer_url: str) -> dict:
     try:
+        time.sleep(25)
         result = subprocess.run(
             ["streamlink", "--json", streamer_url],
             capture_output=True,
@@ -69,7 +70,7 @@ def fetch_metadata(streamer_url: str) -> dict:
         )
         return json.loads(result.stdout)["metadata"]
     except subprocess.CalledProcessError as e:
-        print(f"Streamlink error: {e.stderr}")
+        print(f"Streamlink error: {e}")
         return None
     except json.JSONDecodeError as e:
         print(f"JSON decode error: {e}")
