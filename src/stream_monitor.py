@@ -56,7 +56,7 @@ class StreamMonitor(threading.Thread):
         current_time = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
         stream_title = self.stream_metadata.get("title", "")
         stream_id = self.stream_metadata.get("id", current_time)
-        
+
         output_path = f"recordings/{self.streamer_name}/{stream_id}/{stream_title}-{self.streamer_name}-{current_time}.ts"
 
         output_dir = os.path.dirname(output_path)
@@ -95,7 +95,9 @@ class StreamMonitor(threading.Thread):
 
     def run(self) -> None:
         if not self.config or not self.stream_source_url:
-            logger.error(f"Cannot start monitoring for {self.streamer_name}: missing configuration")
+            logger.error(
+                f"Cannot start monitoring for {self.streamer_name}: missing configuration"
+            )
             return
 
         self.running = True
@@ -106,18 +108,26 @@ class StreamMonitor(threading.Thread):
                 if check_stream_live(self.stream_source_url):
                     logger.success(f"{self.streamer_name} is live!")
 
-                    self.stream_metadata : dict = fetch_metadata(self.stream_source_url)
+                    self.stream_metadata: dict = fetch_metadata(self.stream_source_url)
                     download_success, video_path = self.download_video()
 
                     if download_success:
-                        logger.success(f"Stream for {self.streamer_name} downloaded successfully")
+                        logger.success(
+                            f"Stream for {self.streamer_name} downloaded successfully"
+                        )
                         if video_path:
                             # Process video with streamer name
-                            processor.process(video_path, self.streamer_name, self.config)
+                            processor.process(
+                                video_path, self.streamer_name, self.config
+                            )
                         else:
-                            logger.error("Downloaded file path not found, cannot process")
+                            logger.error(
+                                "Downloaded file path not found, cannot process"
+                            )
                     else:
-                        logger.warning(f"Failed to download stream for {self.streamer_name}")
+                        logger.warning(
+                            f"Failed to download stream for {self.streamer_name}"
+                        )
 
                 else:
                     logger.info(

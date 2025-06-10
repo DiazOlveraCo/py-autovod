@@ -6,6 +6,7 @@ import configparser
 import json
 import time
 
+
 def run_command(
     cmd: List[str],
     stdout: Optional[int] = subprocess.DEVNULL,
