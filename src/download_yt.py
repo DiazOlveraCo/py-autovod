@@ -40,6 +40,10 @@ def parse_arguments():
         choices=["firefox", "chrome", "chromium", "edge", "safari"],
         default=None
     )
+    parser.add_argument(
+        "--force-quality", action="store_true",
+        help="Force higher quality download using aggressive methods"
+    )
     return parser.parse_args()
 
 
@@ -79,8 +83,10 @@ def list_formats(url, ydl_opts):
         return False
 
 
-def download_video(url, output_dir, format_option, cookies_path=None, cookies_browser=None, list_only=False):
+def download_video(url, output_dir, format_option, cookies_path=None, cookies_browser=None, list_only=False, force_quality=False):
     """
+    Download a YouTube video using yt-dlp.
+
     Args:
         url: YouTube video URL
         output_dir: Directory to save the downloaded video
@@ -88,6 +94,7 @@ def download_video(url, output_dir, format_option, cookies_path=None, cookies_br
         cookies_path: Path to cookies file
         cookies_browser: Browser to extract cookies from
         list_only: If True, only list formats without downloading
+        force_quality: If True, use aggressive methods to get higher quality
 
     Returns:
         bool: True if download was successful, False otherwise
@@ -97,9 +104,13 @@ def download_video(url, output_dir, format_option, cookies_path=None, cookies_br
 
         # Configure yt-dlp options with multiple fallback strategies
         ydl_opts = {
-            # Format selection with multiple fallbacks
+            # Format selection with multiple fallbacks - prioritize higher quality
             "format": (
-                # Try best quality first
+                # Try to get 1080p or better first
+                "bestvideo[height>=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height>=1080]+bestaudio/"
+                # Then try 720p
+                "bestvideo[height>=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height>=720]+bestaudio/"
+                # Try best quality available
                 "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/"
                 # Fallback to webm if mp4 not available
                 "bestvideo[ext=webm]+bestaudio[ext=webm]/best[ext=webm]/"
@@ -122,8 +133,10 @@ def download_video(url, output_dir, format_option, cookies_path=None, cookies_br
             # Extractor arguments to try different player clients
             "extractor_args": {
                 "youtube": {
-                    "player_client": ["web", "android", "ios"], 
+                    "player_client": ["web", "android", "ios", "tv_embedded", "web_creator", "mweb"], 
                     "player_skip": ["configs", "webpage"],    # Skip nsig extraction if it fails
+                    "formats": "incomplete,missing_pot",  # Include formats that might be missing some info or PO token
+                    "skip": "dash",  # Skip DASH manifest to avoid some issues
                 }
             },
             # Workarounds for common issues
@@ -153,6 +166,24 @@ def download_video(url, output_dir, format_option, cookies_path=None, cookies_br
         # If custom format specified, use it
         if format_option != "best":
             ydl_opts["format"] = format_option
+        
+        # If force quality is enabled, use more aggressive settings
+        if force_quality:
+            print("Force quality mode enabled - using aggressive download methods...")
+            # Override format selection for maximum quality
+            ydl_opts["format"] = (
+                # Try format IDs directly for common high quality formats
+                "137+140/"  # 1080p mp4 + m4a audio
+                "136+140/"  # 720p mp4 + m4a audio  
+                "22/"       # 720p mp4 with audio
+                # Then fallback to height-based selection
+                "bestvideo[height>=1080]+bestaudio/best[height>=1080]/"
+                "bestvideo[height>=720]+bestaudio/best[height>=720]/"
+                "bestvideo+bestaudio/best"
+            )
+            # Enable additional workarounds
+            ydl_opts["allow_unplayable_formats"] = True
+            ydl_opts["check_formats"] = False  # Skip format checking
 
         # List formats if requested
         if list_only:
@@ -229,7 +260,8 @@ def main():
         args.format,
         args.cookies,
         args.cookies_browser,
-        args.list_formats
+        args.list_formats,
+        args.force_quality
     )
 
     sys.exit(0 if success else 1)
