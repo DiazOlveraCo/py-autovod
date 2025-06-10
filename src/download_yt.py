@@ -17,7 +17,13 @@ try:
 except ImportError:
     print("Error: yt-dlp is not installed.")
     print("Please install it using: pip install yt-dlp")
-    sys.exit(1)
+
+# ffmpeg -i input.mp4 -vf "scale=1080:1920:force_original_aspect_ratio=increase,blur=20[bg];[bg][0:v]scale=1080:1920:force_original_aspect_ratio=decrease[scaled];[scaled]pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black@0,setsar=1" -c:a copy output.mp4
+
+# Force og aspect ratio
+# ffmpeg -i input.mp4 -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1" -c:a copy output.mp4
+
+# ffmpeg -i input.mp4 -vf "crop=ih*9/16:ih,scale=1080:1920" -c:a copy output.mp4
 
 
 def parse_arguments():
@@ -27,63 +33,10 @@ def parse_arguments():
     parser.add_argument(
         "-f", "--format", help="Video format (default: best)", default="best"
     )
-    parser.add_argument(
-        "-l", "--list-formats", action="store_true", 
-        help="List available formats and exit"
-    )
-    parser.add_argument(
-        "--cookies", help="Path to cookies file (Netscape format)",
-        default=None
-    )
-    parser.add_argument(
-        "--cookies-browser", help="Browser to extract cookies from",
-        choices=["firefox", "chrome", "chromium", "edge", "safari"],
-        default=None
-    )
-    parser.add_argument(
-        "--force-quality", action="store_true",
-        help="Force higher quality download using aggressive methods"
-    )
     return parser.parse_args()
 
 
-def list_formats(url, ydl_opts):
-    """List available formats for a video."""
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
-            formats = info.get('formats', [])
-            
-            print(f"\nAvailable formats for: {info.get('title', 'Unknown')}")
-            print("-" * 80)
-            
-            # Group formats by quality
-            video_formats = [f for f in formats if f.get('vcodec') != 'none']
-            audio_formats = [f for f in formats if f.get('acodec') != 'none' and f.get('vcodec') == 'none']
-            
-            if video_formats:
-                print("\nVideo formats:")
-                for f in sorted(video_formats, key=lambda x: x.get('height', 0), reverse=True):
-                    print(f"  {f['format_id']:>3} - {f.get('ext', 'unknown'):>4} "
-                          f"{f.get('height', 'N/A'):>4}p "
-                          f"{f.get('fps', 'N/A'):>3}fps "
-                          f"{f.get('vcodec', 'unknown'):>15} "
-                          f"{'[DRM]' if f.get('has_drm') else ''}")
-            
-            if audio_formats:
-                print("\nAudio formats:")
-                for f in sorted(audio_formats, key=lambda x: x.get('abr', 0), reverse=True):
-                    print(f"  {f['format_id']:>3} - {f.get('ext', 'unknown'):>4} "
-                          f"{f.get('abr', 'N/A'):>4}kbps "
-                          f"{f.get('acodec', 'unknown'):>15}")
-            
-            return True
-    except Exception as e:
-        print(f"Error listing formats: {e}")
-        return False
-
-
-def download_video(url, output_dir, format_option, cookies_path=None, cookies_browser=None, list_only=False, force_quality=False):
+def download_video(url, output_dir, format_option):
     """
     Download a YouTube video using yt-dlp.
 
@@ -91,10 +44,6 @@ def download_video(url, output_dir, format_option, cookies_path=None, cookies_br
         url: YouTube video URL
         output_dir: Directory to save the downloaded video
         format_option: Video format option
-        cookies_path: Path to cookies file
-        cookies_browser: Browser to extract cookies from
-        list_only: If True, only list formats without downloading
-        force_quality: If True, use aggressive methods to get higher quality
 
     Returns:
         bool: True if download was successful, False otherwise
@@ -102,145 +51,25 @@ def download_video(url, output_dir, format_option, cookies_path=None, cookies_br
     try:
         os.makedirs(output_dir, exist_ok=True)
 
-        # Configure yt-dlp options with multiple fallback strategies
+        # Configure yt-dlp options
         ydl_opts = {
-            # Format selection with multiple fallbacks - prioritize higher quality
-            "format": (
-                # Try to get 1080p or better first
-                "bestvideo[height>=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height>=1080]+bestaudio/"
-                # Then try 720p
-                "bestvideo[height>=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height>=720]+bestaudio/"
-                # Try best quality available
-                "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/"
-                # Fallback to webm if mp4 not available
-                "bestvideo[ext=webm]+bestaudio[ext=webm]/best[ext=webm]/"
-                # Try any best video + audio
-                "bestvideo+bestaudio/"
-                # Fallback to best single file
-                "best/"
-                # Last resort - any available format
-                "bestvideo*+bestaudio*/best*"
-            ),
+            "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
             "outtmpl": os.path.join(output_dir, "%(title)s.%(ext)s"),
             "merge_output_format": "mp4",  # Ensures final output is MP4
             "quiet": False,
             "progress": True,
             "no_warnings": False,
             "restrictfilenames": True,  # Avoids special characters in filenames
-            "retries": 10,             # Add retries and error handling
-            "fragment_retries": 10,
-            "skip_unavailable_fragments": True,
-            # Extractor arguments to try different player clients
-            "extractor_args": {
-                "youtube": {
-                    "player_client": ["web", "android", "ios", "tv_embedded", "web_creator", "mweb"], 
-                    "player_skip": ["configs", "webpage"],    # Skip nsig extraction if it fails
-                    "formats": "incomplete,missing_pot",  # Include formats that might be missing some info or PO token
-                    "skip": "dash",  # Skip DASH manifest to avoid some issues
-                }
-            },
-            # Workarounds for common issues
-            "nocheckcertificate": True,
-            "ignoreerrors": False,
-            "no_color": False,
-            # Add user agent to avoid detection
-            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            # Prefer free formats
-            "prefer_free_formats": True,
-            # Continue on download errors
-            "continuedl": True,
-            # Use aria2c for better download performance if available
-            "external_downloader": {
-                "default": "native",
-                "dash": "native",
-                "m3u8": "native"
-            },
         }
-
-        # Add cookies if provided
-        if cookies_path:
-            ydl_opts["cookiefile"] = cookies_path
-        elif cookies_browser:
-            ydl_opts["cookiesfrombrowser"] = (cookies_browser,)
-
-        # If custom format specified, use it
-        if format_option != "best":
-            ydl_opts["format"] = format_option
-        
-        # If force quality is enabled, use more aggressive settings
-        if force_quality:
-            print("Force quality mode enabled - using aggressive download methods...")
-            # Override format selection for maximum quality
-            ydl_opts["format"] = (
-                # Try format IDs directly for common high quality formats
-                "137+140/"  # 1080p mp4 + m4a audio
-                "136+140/"  # 720p mp4 + m4a audio  
-                "22/"       # 720p mp4 with audio
-                # Then fallback to height-based selection
-                "bestvideo[height>=1080]+bestaudio/best[height>=1080]/"
-                "bestvideo[height>=720]+bestaudio/best[height>=720]/"
-                "bestvideo+bestaudio/best"
-            )
-            # Enable additional workarounds
-            ydl_opts["allow_unplayable_formats"] = True
-            ydl_opts["check_formats"] = False  # Skip format checking
-
-        # List formats if requested
-        if list_only:
-            return list_formats(url, ydl_opts)
 
         # Download the video
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             print(f"Downloading video from: {url}")
-            print("Note: If you encounter format errors, try running with --list-formats to see available options")
-            
-            # Extract info first to check for issues
-            try:
-                info = ydl.extract_info(url, download=False)
-                if info.get('is_live'):
-                    print("Warning: This appears to be a live stream. Download may not work as expected.")
-                
-                # Check if DRM protected
-                formats = info.get('formats', [])
-                drm_formats = [f for f in formats if f.get('has_drm')]
-                if drm_formats and len(drm_formats) == len(formats):
-                    print("Warning: All formats appear to be DRM protected. Trying alternative methods...")
-                    # Add additional fallback options for DRM content
-                    ydl_opts["format"] = "best[height<=720]/best"
-                    ydl_opts["allow_unplayable_formats"] = True
-                
-            except Exception as e:
-                print(f"Warning during pre-check: {e}")
-                print("Continuing with download attempt...")
-            
-            # Attempt download
             ydl.download([url])
 
         print(f"Video downloaded successfully to {output_dir}")
         return True
 
-    except yt_dlp.utils.ExtractorError as e:
-        error_msg = str(e)
-        print(f"Extractor error: {error_msg}")
-        
-        # Provide specific guidance based on error
-        if "format is not available" in error_msg:
-            print("\nTip: Try one of these solutions:")
-            print("1. Run with --list-formats to see available formats")
-            print("2. Use --cookies-browser firefox (or chrome) if you're logged into YouTube")
-            print("3. Try a specific format like: -f 'best[height<=720]'")
-            print("4. Update yt-dlp: pip install -U yt-dlp")
-        elif "DRM protected" in error_msg:
-            print("\nThis video appears to be DRM protected. Try:")
-            print("1. Using cookies from your browser: --cookies-browser firefox")
-            print("2. Downloading a lower quality: -f 'best[height<=480]'")
-        elif "nsig extraction failed" in error_msg:
-            print("\nThere's an issue with YouTube's signature extraction. Try:")
-            print("1. Updating yt-dlp: pip install -U yt-dlp")
-            print("2. Using a different format")
-        
-        return False
-        
     except Exception as e:
         print(f"Error downloading video: {e}")
         return False
@@ -253,16 +82,8 @@ def main():
         print("Error: Please provide a valid URL starting with http:// or https://")
         sys.exit(1)
 
-    # Download the video or list formats
-    success = download_video(
-        args.url, 
-        args.output, 
-        args.format,
-        args.cookies,
-        args.cookies_browser,
-        args.list_formats,
-        args.force_quality
-    )
+    # Download the yt video
+    success = download_video(args.url, args.output, args.format)
 
     sys.exit(0 if success else 1)
 
