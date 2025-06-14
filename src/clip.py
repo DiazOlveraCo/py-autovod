@@ -1,8 +1,6 @@
 from moviepy import VideoFileClip
-import argparse
 import json
 import os
-from datetime import datetime
 
 
 def extract_clip(input_file, output_dir, clip_data):

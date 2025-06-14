@@ -38,7 +38,6 @@ def main() -> int:
     manager = StreamManager()
     manager.start(args.name) if args.name else manager.start()
     manager.wait()
-
     return 0
 
 

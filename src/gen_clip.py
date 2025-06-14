@@ -1,16 +1,9 @@
 from openai import OpenAI
-import argparse
 import json
-import os
-import sys
 import time
 from typing import List, Dict, Tuple
-import re
-from itertools import islice
 import multiprocessing as mp
 from concurrent.futures import ThreadPoolExecutor
-import numpy as np
-from tqdm import tqdm
 from settings import config, API_KEY
 
 
