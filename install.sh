@@ -31,9 +31,9 @@ $package_manager -qq $update_command && $package_manager -qq $upgrade_command
 printf "${g}[$now] Installing necessary Packages...${c}\n"
 
 # Package names for apt
-apt_packages=(python3-pip tar ffmpeg)
+apt_packages=(python3-pip tar ffmpeg streamlink)
 # Package names for DNF
-dnf_packages=(python3-pip tar ffmpeg)
+dnf_packages=(python3-pip tar ffmpeg streamlink)
 
 # Use the appropriate package array based on the detected package manager
 if [ "$package_manager" = "apt-get" ]; then
@@ -51,10 +51,3 @@ for package in "${packages[@]}"; do
     sudo $package_manager $install_command "$package" -y
   fi
 done
-
-printf "${g}[$now] Installing Streamlink${c}\n"
-if ! [ -x "$(command -v streamlink)" ]; then
-  pip3 install --upgrade streamlink
-else
-  printf "${g}[$now] Streamlink is already installed. Skipping...${c}\n"
-fi
