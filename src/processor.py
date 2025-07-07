@@ -87,6 +87,7 @@ class Processor:
         ]
         run_command(command)
 
+        # Shorts video format
         if MIN_DURATION < 130:
             command = [
                 "ffmpeg",

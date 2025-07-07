@@ -7,9 +7,9 @@ A Python implementation of [AutoVOD](https://github.com/jenslys/AutoVOD) with so
 ## Features
 - ( :heavy_check_mark: ) Auto download livestreams (Twitch.tv, Kick.tv, Youtube Live) from multiple streamers concurrently
 - ( :heavy_check_mark: ) Audio transcription with timestamps 
-- ( :x: ) Auto upload to RClone, YouTube, and more
+- ( :heavy_check_mark: ) Auto upload to RClone, YouTube, and more
 - ( :heavy_check_mark: ) Smart AI video clipping
-- ( :x: ) Youtube shorts formatting
+- ( :heavy_check_mark: ) Youtube shorts formatting
 - ( :x: ) Archive both video and chat logs
 - ( :heavy_check_mark: ) Platform independent and Docker supported
 
@@ -40,6 +40,10 @@ A Python implementation of [AutoVOD](https://github.com/jenslys/AutoVOD) with so
    ```bash
    python3 src/main.py
    ```
+
+## Uploading 
+
+Auto uploading for YouTube works with [youtubeuploader](https://github.com/porjo/youtubeuploader), but it requires additional setup and configuration. 
 
 ## Clip Generation
 
