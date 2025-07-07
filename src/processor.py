@@ -66,8 +66,13 @@ class Processor:
 
             # Process with clipception
             if config.getboolean("clipception", "enabled") and streamer_config.getboolean("clipception", "enabled"):
-                upload = streamer_config.getboolean("upload","upload")
                 self._process_single_file(new_video_path, streamer_name, upload_video = upload)
+
+            # Upload 
+            upload = streamer_config.getboolean("upload","upload")
+            if upload:
+                logger.info("Uploading video.")
+                upload_youtube(new_video_path)
 
             logger.info(f"Finished processing: {new_video_path}")
             self.queue.task_done()
@@ -225,11 +230,6 @@ class Processor:
             logger.info(f"1. Transcription: {transcription_json}")
             logger.info(f"2. Clip selections: {output_file}")
             logger.info(f"3. Video clips: {clips_output_dir}/")
-
-            # Upload 
-            if upload_video:
-                logger.info("Uploading video.")
-                upload_youtube(video_path)
 
         except Exception as e:
             logger.error(f"Error processing video {video_path}: {str(e)}")
