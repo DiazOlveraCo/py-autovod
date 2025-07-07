@@ -38,8 +38,13 @@ class Processor:
 
     def _process_queue(self):
         """Process queue continuously."""
-        while not self.stop_event.is_set() and not self.queue.empty(): 
-            video_path, streamer_name, streamer_config = self.queue.get()
+        while not self.stop_event.is_set(): 
+            try:
+                item = self.queue.get(timeout=3)  
+            except queue.Empty:
+                continue  
+
+            video_path, streamer_name, streamer_config = item
             new_video_path = video_path
             self.processing_event.set()
             logger.info(f"Processing video: {video_path}")
