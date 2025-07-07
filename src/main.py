@@ -11,7 +11,7 @@ from stream_manager import StreamManager
 def main() -> int:
     version = config.get("general", "version", fallback="1.0.0")
 
-    logger.info(f"Starting AutoVOD v{version}")
+    logger.info(f"Starting PyAutoVOD v{version}")
 
     parser = argparse.ArgumentParser(
         description="AutoVOD - Automatic VOD downloader and uploader for Twitch, Kick, and YouTube"
@@ -34,11 +34,12 @@ def main() -> int:
     if args.version:
         print(f"Version: {version}")
         return 0
+    
+    logger.info(f"Clipception Enabled: {config.get("clipception","enabled")}")
 
     manager = StreamManager()
     manager.start(args.name) if args.name else manager.start()
     manager.wait()
-
     return 0
 
 

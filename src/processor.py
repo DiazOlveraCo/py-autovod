@@ -4,12 +4,12 @@ import os
 from logger import logger
 from settings import config
 from utils import run_command
+from uploader import upload_youtube
 
-# clipception
-from transcription import process_video,MIN_DURATION
+#clipception
+from transcription import process_video, MIN_DURATION
 from gen_clip import generate_clips
 from clip import process_clips
-
 
 class Processor:
     _instance = None
@@ -21,36 +21,38 @@ class Processor:
 
     def __init__(self):
         if not hasattr(self, "initialized"):
-            self.video_queue = queue.Queue()
-            self.processing = False
+            self.queue = queue.Queue()
+            self.worker_thread = threading.Thread(target=self._process_queue, daemon=True)
+            self.processing_event = threading.Event()
+            self.stop_event = threading.Event()
             self.initialized = True
+            
+            self.worker_thread.start()
 
     def process(self, video_path, streamer_name, streamer_config):
         """Add a ts file to the queue to be processed with clipception."""
-
         if not os.path.exists(video_path):
             logger.warning(f"Can't queue video. Path {video_path} does not exist.")
             return
 
         logger.debug(f"Queuing video: {video_path}")
-
-        # Add both video path and streamer name to the queue
-        self.video_queue.put((video_path, streamer_name, streamer_config))
-
-        if not self.processing:
-            threading.Thread(target=self._process_queue, daemon=True).start()
+        self.queue.put((video_path, streamer_name, streamer_config))
 
     def _process_queue(self):
-        """Process in the queue one by one."""
-        self.processing = True
-        while not self.video_queue.empty():
-            video_path, streamer_name, streamer_config = self.video_queue.get()
+        """Process queue continuously."""
+        while not self.stop_event.is_set(): 
+            try:
+                item = self.queue.get(timeout=3)  
+            except queue.Empty:
+                continue  
+
+            video_path, streamer_name, streamer_config = item
             new_video_path = video_path
+            self.processing_event.set()
             logger.info(f"Processing video: {video_path}")
 
-            # Convert and re-encode if configured
             try:
-                # Convert .ts to a new format
+                # Convert and re-encode if needed
                 if streamer_config.getboolean("local", "save_locally"):
                     new_video_path = self._convert(video_path)
 
@@ -63,27 +65,54 @@ class Processor:
                 logger.error(f"Error encoding/saving video locally: {str(e)}")
 
             # Process with clipception
-            if config.getboolean(
-                "clipception", "enabled"
-            ) and streamer_config.getboolean("clipception", "enabled"):
-                self._process_single_file(new_video_path, streamer_name)
+            if config.getboolean("clipception", "enabled") and streamer_config.getboolean("clipception", "enabled"):
+                self._process_single_file(new_video_path, streamer_name, upload_video = upload)
+
+            # Upload 
+            upload = streamer_config.getboolean("upload","upload")
+            if upload:
+                logger.info("Uploading video.")
+                upload_youtube(new_video_path)
 
             logger.info(f"Finished processing: {new_video_path}")
-            self.video_queue.task_done()
-        self.processing = False
+            self.queue.task_done()
+            self.processing_event.clear()
+
+    def stop(self):
+        """Signal the worker thread to stop"""
+        self.stop_event.set()
+        self.worker_thread.join()
 
     def _convert(self, input_path: str) -> str:
         """Converts a file to a new format using ffmpeg."""
 
         output_path = os.path.splitext(input_path)[0] + ".mp4"
 
-        command = ['ffmpeg', '-i', input_path, '-c', 'copy', output_path,"-loglevel","error"]
+        command = [
+            "ffmpeg",
+            "-i",
+            input_path,
+            "-c",
+            "copy",
+            output_path,
+            "-loglevel",
+            "error",
+        ]
         run_command(command)
 
+        # Shorts video format
         if MIN_DURATION < 130:
-            command = ['ffmpeg', '-i', output_path,
-                '-vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1"''-c', 
-                'copy', "s"+output_path,"-loglevel","error"]
+            command = [
+                "ffmpeg",
+                "-i",
+                output_path,
+                '-vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1"'
+                "-c",
+                "copy",
+                "s" + output_path,
+                "-loglevel",
+                "error",
+            ]
             run_command(command)
 
         return output_path
@@ -129,12 +158,10 @@ class Processor:
             logger.error(f"Error encoding/saving video locally: {str(e)}")
             return None
 
-    def _process_single_file(self, video_path, streamer_name=None):
+    def _process_single_file(self, video_path, streamer_name, upload_video=False):
         """Process a video file with clipception to generate clips."""
         try:
-            num_clips = config.getint(
-                "clipception", "num_clips", fallback=10
-            )  # Default number of clips to generate
+            num_clips = config.getint("clipception", "num_clips", fallback=10)
             min_score = 0  # Default minimum score threshold
             chunk_size = 10
 
@@ -150,7 +177,7 @@ class Processor:
             output_dir = os.path.dirname(video_path)
 
             # Step 1: Run enhanced transcription
-            logger.info("Step 1: Generating enhanced transcription...")
+            logger.info("STEP 1: Generating enhanced transcription...")
 
             try:
                 process_video(video_path)
@@ -168,7 +195,7 @@ class Processor:
                 return
 
             # Step 2: Generate clips JSON using GPU acceleration
-            logger.info("Step 2: Processing transcription for clip selection...")
+            logger.info("STEP 2: Processing transcription for clip selection...")
 
             output_file = os.path.join(output_dir, "top_clips_one.json")
 
@@ -188,7 +215,7 @@ class Processor:
                 return
 
             # Step 3: Extract video clips
-            logger.info("Step 3: Extracting clips...")
+            logger.info("STEP 3: Extracting clips...")
             clips_output_dir = os.path.join(output_dir, "clips")
 
             try:

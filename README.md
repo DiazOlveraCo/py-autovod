@@ -1,4 +1,4 @@
-# AutoVOD.py
+# PyAutoVOD
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Issues](https://img.shields.io/github/issues/0jc1/py-autovod.svg)](https://github.com/0jc1/py-autovod/issues)
 
@@ -7,15 +7,15 @@ A Python implementation of [AutoVOD](https://github.com/jenslys/AutoVOD) with so
 ## Features
 - ( :heavy_check_mark: ) Auto download livestreams (Twitch.tv, Kick.tv, Youtube Live) from multiple streamers concurrently
 - ( :heavy_check_mark: ) Audio transcription with timestamps 
-- ( :x: ) Auto upload to RClone, YouTube, and more
+- ( :heavy_check_mark: ) Auto upload to RClone, YouTube, and more
 - ( :heavy_check_mark: ) Smart AI video clipping
-- ( :x: ) Youtube shorts formatting
+- ( :heavy_check_mark: ) Youtube shorts formatting
 - ( :x: ) Archive both video and chat logs
 - ( :heavy_check_mark: ) Platform independent and Docker supported
 
 ## Installation & Setup
 
-1. Manually install ffmpeg and streamlink. Alternatively, you can do the installation automatically with `install.sh`.
+1. Manually install ffmpeg and [streamlink](https://github.com/streamlink/streamlink). Alternatively, you can do the installation automatically with `install.sh`.
 
 2. Python 3.9+ is required. Set up a Python virtual environment, then install the required packages:
    ```bash
@@ -40,6 +40,10 @@ A Python implementation of [AutoVOD](https://github.com/jenslys/AutoVOD) with so
    ```bash
    python3 src/main.py
    ```
+
+## Uploading 
+
+Auto uploading for YouTube works with [youtubeuploader](https://github.com/porjo/youtubeuploader), but it requires additional setup and configuration. 
 
 ## Clip Generation
 
