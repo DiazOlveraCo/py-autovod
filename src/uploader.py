@@ -17,7 +17,7 @@ def upload_youtube(filename: str) -> None:
     else:
         uploader_path = YOUTUBE_UPLOADER_LINUX
 
-    command = [uploader_path, "-filename", f"'{filename}'"]
+    command = [uploader_path, "-filename", filename]
     result = run_command(command)
 
     if result.returncode != 0:
