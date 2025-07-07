@@ -34,6 +34,8 @@ def main() -> int:
     if args.version:
         print(f"Version: {version}")
         return 0
+    
+    logger.info(f"Clipception Enabled: {config.get("clipception","enabled")}")
 
     manager = StreamManager()
     manager.start(args.name) if args.name else manager.start()

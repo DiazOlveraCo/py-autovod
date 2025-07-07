@@ -67,7 +67,7 @@ class Processor:
             # Process with clipception
             if config.getboolean("clipception", "enabled") and streamer_config.getboolean("clipception", "enabled"):
                 upload = streamer_config.getboolean("upload","upload")
-                self._process_single_file(new_video_path, streamer_name,upload_video = upload)
+                self._process_single_file(new_video_path, streamer_name, upload_video = upload)
 
             logger.info(f"Finished processing: {new_video_path}")
             self.queue.task_done()
@@ -153,7 +153,7 @@ class Processor:
             logger.error(f"Error encoding/saving video locally: {str(e)}")
             return None
 
-    def _process_single_file(self, video_path, upload_video=False):
+    def _process_single_file(self, video_path, streamer_name, upload_video=False):
         """Process a video file with clipception to generate clips."""
         try:
             num_clips = config.getint("clipception", "num_clips", fallback=10)
