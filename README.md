@@ -1,4 +1,4 @@
-# AutoVOD.py
+# PyAutoVOD
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Issues](https://img.shields.io/github/issues/0jc1/py-autovod.svg)](https://github.com/0jc1/py-autovod/issues)
 
@@ -15,7 +15,7 @@ A Python implementation of [AutoVOD](https://github.com/jenslys/AutoVOD) with so
 
 ## Installation & Setup
 
-1. Manually install ffmpeg and streamlink. Alternatively, you can do the installation automatically with `install.sh`.
+1. Manually install ffmpeg and [streamlink](https://github.com/streamlink/streamlink). Alternatively, you can do the installation automatically with `install.sh`.
 
 2. Python 3.9+ is required. Set up a Python virtual environment, then install the required packages:
    ```bash
