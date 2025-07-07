@@ -72,7 +72,7 @@ class Processor:
             upload = streamer_config.getboolean("upload","upload")
             if upload:
                 logger.info("Uploading video.")
-                upload_youtube(new_video_path)
+                upload_youtube(os.path.abspath(new_video_path))
 
             logger.info(f"Finished processing: {new_video_path}")
             self.queue.task_done()
