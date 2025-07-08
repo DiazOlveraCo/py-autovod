@@ -53,8 +53,7 @@ class Processor:
 
             try:
                 # Convert and re-encode if needed
-                if streamer_config.getboolean("local", "save_locally"):
-                    new_video_path = self._convert(video_path)
+                new_video_path = self._convert(video_path)
 
                 if streamer_config.getboolean("encoding", "re_encode"):
                     new_video_path = self._encode(new_video_path, streamer_config)
@@ -75,6 +74,14 @@ class Processor:
                 upload_youtube(os.path.abspath(new_video_path))
 
             logger.info(f"Finished processing: {new_video_path}")
+
+            # Delete files after upload if not set to save locally
+            save_locally = streamer_config.getboolean("local", "save_locally", fallback=True)
+            
+            if not save_locally:
+                logger.info("Deleting video files after upload (save_locally is disabled)")
+                self._delete_video_files(video_path, new_video_path)
+
             self.queue.task_done()
             self.processing_event.clear()
 
@@ -82,6 +89,21 @@ class Processor:
         """Signal the worker thread to stop"""
         self.stop_event.set()
         self.worker_thread.join()
+        
+    def _delete_video_files(self, ts_path, mp4_path):
+        try:
+            # Delete the .ts file if it exists
+            if os.path.exists(ts_path):
+                os.remove(ts_path)
+                logger.info(f"Deleted .ts file: {ts_path}")
+                
+            # Delete the .mp4 file if it exists
+            if os.path.exists(mp4_path):
+                os.remove(mp4_path)
+                logger.info(f"Deleted .mp4 file: {mp4_path}")
+
+        except Exception as e:
+            logger.error(f"Error deleting video files: {str(e)}")
 
     def _convert(self, input_path: str) -> str:
         """Converts a file to a new format using ffmpeg."""
