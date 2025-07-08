@@ -2,6 +2,7 @@ from loguru import logger
 import sys
 
 DEBUG = True
+LOGFILE = False
 
 
 def debug_filter(record):
@@ -16,9 +17,10 @@ logger.add(
     colorize=True,
 )
 
-# logger.add(
-#     "app.log",
-#     rotation="10 MB",
-#     retention="1 week",
-#     format="[{time:YYYY-MM-DD HH:mm:ss}] | {level} | {message}",
-# )
+if LOGFILE: 
+    logger.add(
+        "app.log",
+        rotation="10 MB",
+        retention="1 week",
+        format="[{time:YYYY-MM-DD HH:mm:ss}] | {level} | {message}",
+    )
