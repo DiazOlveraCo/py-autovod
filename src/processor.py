@@ -70,8 +70,11 @@ class Processor:
             # Upload 
             upload = streamer_config.getboolean("upload","upload")
             if upload:
-                logger.info("Uploading video.")
-                upload_youtube(os.path.abspath(new_video_path))
+                try:
+                    logger.info("Uploading video.")
+                    upload_youtube(os.path.abspath(new_video_path))
+                except:
+                    pass
 
             logger.info(f"Finished processing: {new_video_path}")
 
