@@ -1,5 +1,6 @@
 import os
 import platform
+import subprocess
 from utils import run_command
 
 YOUTUBE_UPLOADER_LINUX = "/root/youtubeuploader/youtubeuploader"
@@ -18,7 +19,8 @@ def upload_youtube(filename: str) -> None:
         uploader_path = YOUTUBE_UPLOADER_LINUX
 
     command = [uploader_path, "-filename", filename]
-    result = run_command(command)
+    result = run_command(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print(result.stdout.decode())
 
     if result.returncode != 0:
         raise RuntimeError("youtubeuploader failed to upload the file")
