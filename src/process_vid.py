@@ -31,7 +31,7 @@ def main():
         sys.exit(1)
 
     # Use the processor's existing method to process the video
-    processor._process_single_file(video_path)
+    processor._process_single_file(video_path, None, False)
 
 
 if __name__ == "__main__":
