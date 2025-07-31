@@ -10,9 +10,7 @@ def upload_youtube(filename: str) -> None:
     if not os.path.isfile(filename):
         raise FileNotFoundError(f"File not found: {filename}")
 
-    system = platform.system()
-    
-    if system == "Windows":
+    if platform.system() == "Windows":
         uploader_path = YOUTUBE_UPLOADER_WINDOWS
         filename = os.path.normpath(filename)
     else:
