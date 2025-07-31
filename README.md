@@ -2,7 +2,7 @@
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Issues](https://img.shields.io/github/issues/0jc1/py-autovod.svg)](https://github.com/0jc1/py-autovod/issues)
 
-A Python implementation of [AutoVOD](https://github.com/jenslys/AutoVOD) with some extra features for clipping and transcribing. 
+A Python implementation of [AutoVOD](https://github.com/jenslys/AutoVOD) with some extra features for AI-powered clipping and transcribing. 
 
 ## Features
 - ( :heavy_check_mark: ) Auto download livestreams (Twitch.tv, Kick.tv, Youtube Live) from multiple streamers concurrently
@@ -70,7 +70,6 @@ Add background music:
 ```bash
 ffmpeg -i input.mp4 -i music.mp3 -filter_complex "[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2[v];[1:a]volume=0.3[a1];[0:a][a1]amix=inputs=2[a]" -map "[v]" -map "[a]" -shortest output.mp4
 ```
-
 
 ## Transcription
 

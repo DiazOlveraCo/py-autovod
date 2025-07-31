@@ -18,6 +18,13 @@ def upload_youtube(filename: str) -> None:
     else:
         uploader_path = YOUTUBE_UPLOADER_LINUX
 
+    if not os.path.isfile(uploader_path):
+        cwd_uploader = os.path.join(os.getcwd(), os.path.basename(uploader_path))
+        if os.path.isfile(cwd_uploader):
+            uploader_path = cwd_uploader
+        else:
+            raise FileNotFoundError(f"YouTube uploader not found in either {uploader_path} or {cwd_uploader}")
+
     command = [uploader_path, "-filename", filename]
     result = run_command(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     print(result.stdout.decode())
