@@ -3,10 +3,13 @@ requires = ["setuptools>=42"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "py-autovod"
-version = "1.0.0"
-description = "Automatically download and upload streams in realtime"
+name = "autovod"
+version = "1.0.3"
+description = "Automatically download livestreams, clip with AI, and upload in realtime"
 authors = [{name = "0jc1", email = "52017130+0jc1@users.noreply.github.com"}]
+
+[project.scripts]
+autovod = "src.main:main"
 
 [tool.black]
 skip-magic-trailing-comma = true
