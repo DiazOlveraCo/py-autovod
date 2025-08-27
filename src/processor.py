@@ -65,7 +65,7 @@ class Processor:
 
             # Process with clipception
             if config.getboolean("clipception", "enabled") and streamer_config.getboolean("clipception", "enabled"):
-                self._process_single_file(new_video_path, streamer_name, upload_video = upload)
+                self._process_single_file(new_video_path, streamer_name, upload_video = False)
 
             # Upload 
             upload = streamer_config.getboolean("upload","upload")
