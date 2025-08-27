@@ -6,10 +6,11 @@ from settings import config
 from utils import run_command
 from uploader import upload_youtube
 
-#clipception
+# clipception
 from transcription import process_video, MIN_DURATION
 from gen_clip import generate_clips
 from clip import process_clips
+
 
 class Processor:
     _instance = None
@@ -22,11 +23,13 @@ class Processor:
     def __init__(self):
         if not hasattr(self, "initialized"):
             self.queue = queue.Queue()
-            self.worker_thread = threading.Thread(target=self._process_queue, daemon=True)
+            self.worker_thread = threading.Thread(
+                target=self._process_queue, daemon=True
+            )
             self.processing_event = threading.Event()
             self.stop_event = threading.Event()
             self.initialized = True
-            
+
             self.worker_thread.start()
 
     def process(self, video_path, streamer_name, streamer_config):
@@ -40,11 +43,11 @@ class Processor:
 
     def _process_queue(self):
         """Process queue continuously."""
-        while not self.stop_event.is_set(): 
+        while not self.stop_event.is_set():
             try:
-                item = self.queue.get(timeout=3)  
+                item = self.queue.get(timeout=3)
             except queue.Empty:
-                continue  
+                continue
 
             video_path, streamer_name, streamer_config = item
             new_video_path = video_path
@@ -64,11 +67,15 @@ class Processor:
                 logger.error(f"Error encoding/saving video locally: {str(e)}")
 
             # Process with clipception
-            if config.getboolean("clipception", "enabled") and streamer_config.getboolean("clipception", "enabled"):
-                self._process_single_file(new_video_path, streamer_name, upload_video = False)
+            if config.getboolean(
+                "clipception", "enabled"
+            ) and streamer_config.getboolean("clipception", "enabled"):
+                self._process_single_file(
+                    new_video_path, streamer_name, upload_video=False
+                )
 
-            # Upload 
-            upload = streamer_config.getboolean("upload","upload")
+            # Upload
+            upload = streamer_config.getboolean("upload", "upload")
             if upload:
                 try:
                     logger.info("Uploading video.")
@@ -79,10 +86,14 @@ class Processor:
             logger.info(f"Finished processing: {new_video_path}")
 
             # Delete files after upload if not set to save locally
-            save_locally = streamer_config.getboolean("local", "save_locally", fallback=True)
-            
+            save_locally = streamer_config.getboolean(
+                "local", "save_locally", fallback=True
+            )
+
             if not save_locally:
-                logger.info("Deleting video files after upload (save_locally is disabled)")
+                logger.info(
+                    "Deleting video files after upload (save_locally is disabled)"
+                )
                 self._delete_video_files(video_path, new_video_path)
 
             self.queue.task_done()
@@ -92,14 +103,14 @@ class Processor:
         """Signal the worker thread to stop"""
         self.stop_event.set()
         self.worker_thread.join()
-        
+
     def _delete_video_files(self, ts_path, mp4_path):
         try:
             # Delete the .ts file if it exists
             if os.path.exists(ts_path):
                 os.remove(ts_path)
                 logger.info(f"Deleted .ts file: {ts_path}")
-                
+
             # Delete the .mp4 file if it exists
             if os.path.exists(mp4_path):
                 os.remove(mp4_path)

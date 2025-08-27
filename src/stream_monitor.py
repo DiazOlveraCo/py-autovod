@@ -112,9 +112,13 @@ class StreamMonitor(threading.Thread):
                     download_success, video_path = self.download_video()
 
                     if download_success:
-                        logger.success(f"Stream for {self.streamer_name} downloaded successfully")
+                        logger.success(
+                            f"Stream for {self.streamer_name} downloaded successfully"
+                        )
                     else:
-                        logger.warning(f"Failed to download stream for {self.streamer_name}")
+                        logger.warning(
+                            f"Failed to download stream for {self.streamer_name}"
+                        )
 
                     # Process video
                     if video_path:
@@ -123,7 +127,9 @@ class StreamMonitor(threading.Thread):
                         logger.error("Downloaded file path not found, cannot process")
 
                 else:
-                    logger.info(f"{self.streamer_name} is offline. Retrying in {self.retry_delay} seconds..")
+                    logger.info(
+                        f"{self.streamer_name} is offline. Retrying in {self.retry_delay} seconds.."
+                    )
             except Exception as e:
                 logger.error(f"Error monitoring {self.streamer_name}: {e}")
 

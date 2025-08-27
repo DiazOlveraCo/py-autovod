@@ -35,7 +35,7 @@ def main() -> int:
         print(f"Version: {version}")
         return 0
 
-    clipception_enabled = config.get("clipception","enabled")
+    clipception_enabled = config.get("clipception", "enabled")
     logger.info(f"Clipception Enabled: {clipception_enabled}")
 
     manager = StreamManager()

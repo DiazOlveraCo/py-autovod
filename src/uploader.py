@@ -4,7 +4,8 @@ import subprocess
 from utils import run_command
 
 YOUTUBE_UPLOADER_LINUX = "/root/youtubeuploader/youtubeuploader"
-YOUTUBE_UPLOADER_WINDOWS = "C:\\youtubeuploader\\youtubeuploader.exe"  
+YOUTUBE_UPLOADER_WINDOWS = "C:\\youtubeuploader\\youtubeuploader.exe"
+
 
 def upload_youtube(filename: str) -> None:
     if not os.path.isfile(filename):
@@ -21,7 +22,9 @@ def upload_youtube(filename: str) -> None:
         if os.path.isfile(cwd_uploader):
             uploader_path = cwd_uploader
         else:
-            raise FileNotFoundError(f"YouTube uploader not found in either {uploader_path} or {cwd_uploader}")
+            raise FileNotFoundError(
+                f"YouTube uploader not found in either {uploader_path} or {cwd_uploader}"
+            )
 
     command = [uploader_path, "-filename", filename]
     result = run_command(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

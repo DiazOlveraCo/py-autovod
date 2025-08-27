@@ -17,7 +17,7 @@ logger.add(
     colorize=True,
 )
 
-if LOGFILE: 
+if LOGFILE:
     logger.add(
         "app.log",
         rotation="10 MB",
