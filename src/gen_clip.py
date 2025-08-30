@@ -11,7 +11,7 @@ model_name = config.get(
     "clipception.llm", "model_name", fallback="deepseek/deepseek-chat"
 )
 temperature = config.getfloat("clipception.llm", "temperature", fallback=0.5)
-max_tokens = config.getint("clipception.llm", "max_tokens", fallback=1000)
+max_tokens = config.getint("clipception.llm", "max_tokens", fallback=4000)
 
 
 def chunk_list(lst: List, chunk_size: int) -> List[List]:
@@ -51,6 +51,11 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
         default_headers={"HTTP-Referer": "http://localhost", "X-Title": "Py-AutoVod"},
     )
 
+    audio_weight = 40
+    content_weight = 60
+    max_retries = 4
+    retry_delay = 2 # seconds
+
     prompt = f"""
     You are an expert content analyzer focusing on viral clip potential. 
     You can combine clips together to form a longer clip. Analyze these clips:
@@ -59,12 +64,12 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
 
     For each clip, evaluate using:
 
-    1. Audio Engagement (40% weight):
+    1. Audio Engagement ({audio_weight}% weight):
     - Volume patterns and variations
     - Voice intensity and emotional charge 
     - Acoustic characteristics
 
-    2. Content Analysis (60% weight):
+    2. Content Analysis ({content_weight}% weight):
     - Topic relevance and timeliness
     - Controversial or debate-sparking elements
     - "Quotable" phrases
@@ -75,9 +80,6 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
 
     Rank clips by viral potential. Focus on measurable features in the data. No commentary. No markdown. Pure JSON only.
     """
-
-    max_retries = 4
-    retry_delay = 2
 
     for attempt in range(max_retries):
         try:

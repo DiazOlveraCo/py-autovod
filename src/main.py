@@ -4,7 +4,7 @@ import os
 import sys
 import argparse
 from logger import logger
-from settings import config
+from settings import config, CLIPCEPTION_ENABLED
 from stream_manager import StreamManager
 
 
@@ -35,8 +35,7 @@ def main() -> int:
         print(f"Version: {version}")
         return 0
 
-    clipception_enabled = config.get("clipception", "enabled")
-    logger.info(f"Clipception Enabled: {clipception_enabled}")
+    logger.info(f"Clipception Enabled: {CLIPCEPTION_ENABLED}")
 
     manager = StreamManager()
     manager.start(args.name) if args.name else manager.start()

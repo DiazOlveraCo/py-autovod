@@ -2,7 +2,7 @@ import queue
 import threading
 import os
 from logger import logger
-from settings import config
+from settings import config, CLIPCEPTION_ENABLED
 from utils import run_command
 from uploader import upload_youtube
 
@@ -67,9 +67,7 @@ class Processor:
                 logger.error(f"Error encoding/saving video locally: {str(e)}")
 
             # Process with clipception
-            if config.getboolean(
-                "clipception", "enabled"
-            ) and streamer_config.getboolean("clipception", "enabled"):
+            if CLIPCEPTION_ENABLED and streamer_config.getboolean("clipception", "enabled"):
                 self._process_single_file(
                     new_video_path, streamer_name, upload_video=False
                 )
