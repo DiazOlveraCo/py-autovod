@@ -1,9 +1,9 @@
 services:
-  autovod:
-    container_name: auto-vod
-  #image: #docker.io/0jc1/auto-vod:latest # or change to other branch you want to use
-  build: . # uncomment this line if you want to build the image locally with "docker compose up -d --build"
-  restart: unless-stopped
-  env_file:
+  app:
+    build: .
+    container_name: py-autovod
+    volumes:
+      - .:/app
+    restart: unless-stopped
+    env_file:
       - .env
-  tty: true
