@@ -1,22 +1,17 @@
 import os
 import sys
 import subprocess
-from typing import List, Optional, Tuple, Dict
 from logger import logger
 from pathlib import Path
 import configparser
 import json
 import time
 
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    import tomli as tomllib
 
 def run_command(
-    cmd: List[str],
-    stdout: Optional[int] = subprocess.DEVNULL,
-    stderr: Optional[int] = subprocess.DEVNULL,
+    cmd: list[str],
+    stdout: int | None = subprocess.DEVNULL,
+    stderr: int | None = subprocess.DEVNULL,
 ) -> subprocess.CompletedProcess:
     if not cmd:
         logger.warning("Command list is empty")
@@ -34,12 +29,12 @@ def is_docker() -> bool:
     return os.path.exists("/.dockerenv")
 
 
-def determine_source(stream_source: str, streamer_name: str) -> Optional[str]:
+def determine_source(stream_source: str, streamer_name: str) -> str | None:
     if not stream_source or not streamer_name:
         logger.error("Stream source and streamer name cannot be empty")
         return None
 
-    sources: Dict[str, str] = {
+    sources: dict[str, str] = {
         "twitch": f"twitch.tv/{streamer_name}",
         "kick": f"kick.com/{streamer_name}",
         "youtube": f"youtube.com/@{streamer_name}/live",
@@ -85,33 +80,36 @@ def fetch_metadata(streamer_url: str) -> dict:
     
 
 def get_version_from_toml() -> str:
-    """Extracts the version string from a pyproject.toml file.
-    
+    """
+    Extracts the version string from a pyproject.toml file.
     Supports both PEP 621 ([project]) and Poetry ([tool.poetry]) formats.
-    Works with Python 3.10+."""
+    Works with Python 3.10+.
+    """
     path = Path("pyproject.toml")
     try: 
+        if sys.version_info >= (3, 11):
+            import tomllib
+        else:
+            import tomli as tomllib
+
         if not path.exists():
             raise FileNotFoundError(f"File {path} is missing!")
 
-        with open(path, "rb") as f:
+        with open(path, "rb") as f: 
             data = tomllib.load(f)
 
-        # PEP 621 standard
-        if "project" in data and "version" in data["project"]:
-            return data["project"]["version"]
+        return data.get("project", {}).get("version", "0.0.0")
 
         # Poetry format
-        poetry_section = data.get("tool", {}).get("poetry", {})
-        if "version" in poetry_section:
-            return poetry_section["version"]
+        # poetry_section = data.get("tool", {}).get("poetry", {})
+        # if "version" in poetry_section:
+        #     return poetry_section["version"]
     except Exception as e:
         logger.error(f"Error getting version from {path}: {e}")
-
     return "0.0.0" 
 
 
-def load_config(config_name: str) -> Optional[configparser.ConfigParser]:
+def load_config(config_name: str) -> configparser.ConfigParser | None:
     config = configparser.ConfigParser()
     config_file = f"{config_name}.ini"
 

@@ -1,7 +1,6 @@
 from openai import OpenAI
 import json
 import time
-from typing import List, Dict, Tuple
 import multiprocessing as mp
 from concurrent.futures import ThreadPoolExecutor
 from settings import config, API_KEY
@@ -14,12 +13,12 @@ temperature = config.getfloat("clipception.llm", "temperature", fallback=0.5)
 max_tokens = config.getint("clipception.llm", "max_tokens", fallback=4000)
 
 
-def chunk_list(lst: List, chunk_size: int) -> List[List]:
+def chunk_list(lst: list, chunk_size: int) -> list[list]:
     """Split a list into chunks of specified size."""
     return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
 
 
-def load_clips(json_path: str) -> List[Dict]:
+def load_clips(json_path: str) -> list[dict]:
     try:
         with open(json_path, "r") as file:
             return json.load(file)
@@ -29,7 +28,7 @@ def load_clips(json_path: str) -> List[Dict]:
         raise ValueError(f"Invalid JSON format in file: {json_path}")
 
 
-def process_chunk(chunk_data: Tuple[List[Dict], int]) -> List[Dict]:
+def process_chunk(chunk_data: tuple[list[dict], int]) -> list[dict]:
     """Process a single chunk of clips using GPU acceleration."""
     clips, chunk_id = chunk_data
 
@@ -44,7 +43,7 @@ def process_chunk(chunk_data: Tuple[List[Dict], int]) -> List[Dict]:
         return []
 
 
-def rank_clips_chunk(clips: List[Dict]) -> str:
+def rank_clips_chunk(clips: list[dict]) -> str:
     client = OpenAI(
         base_url="https://openrouter.ai/api/v1",
         api_key=API_KEY,
@@ -115,8 +114,8 @@ def rank_clips_chunk(clips: List[Dict]) -> str:
 
 
 def rank_all_clips_parallel(
-    clips: List[Dict], chunk_size: int = 5, num_processes: int = None
-) -> List[Dict]:
+    clips: list[dict], chunk_size: int = 5, num_processes: int | None = None
+) -> list[dict]:
     """Rank clips in parallel using multiple processes."""
     if num_processes is None:
         num_processes = mp.cpu_count()
@@ -171,7 +170,7 @@ def parse_clip_data(input_string: str) -> list[dict]:
 
 
 def save_top_clips_json(
-    clips: List[Dict], output_file: str, num_clips: int = 20
+    clips: list[dict], output_file: str, num_clips: int = 20
 ) -> None:
     top_clips = clips[:num_clips]
     output_data = {
@@ -195,7 +194,7 @@ def generate_clips(
     num_processes=None,
 ):
     start_time = time.time()
-    clips: List[Dict] = load_clips(clips_json_path)
+    clips: list[dict] = load_clips(clips_json_path)
 
     try:
         ranked_clips = rank_all_clips_parallel(clips, chunk_size, num_processes)

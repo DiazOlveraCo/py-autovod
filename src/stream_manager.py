@@ -1,7 +1,6 @@
 import sys
 import time
 import signal
-from typing import Dict, List, Optional
 from logger import logger
 from settings import config
 from stream_monitor import StreamMonitor
@@ -13,7 +12,7 @@ class StreamManager:
     """Class to manage multiple streamer monitors."""
 
     def __init__(self):
-        self.monitors: Dict[str, StreamMonitor] = {}
+        self.monitors: dict[str, StreamMonitor] = {}
         self.running = False
 
         self.retry_delay = config.getint("general", "retry_delay", fallback=120)
@@ -29,7 +28,7 @@ class StreamManager:
         self.stop()
         sys.exit(0)
 
-    def get_streamers_list(self) -> List[str]:
+    def get_streamers_list(self) -> list[str]:
         if not config or not config.has_section("streamers"):
             logger.warning("No streamers section in configuration")
             return []
@@ -42,13 +41,13 @@ class StreamManager:
             set([s.strip() for s in streamers_str.strip(",").split(",") if s.strip()])
         )
 
-    def start(self, streamer_name: Optional[str] = None) -> None:
+    def start(self, streamer_name: str | None = None) -> None:
         if self.running:
             logger.warning("Stream manager is already running")
             return
 
         self.running = True
-        streamers: List[str] = []
+        streamers: list[str] = []
 
         if streamer_name:
             streamers = [streamer_name]
@@ -85,7 +84,7 @@ class StreamManager:
         self.monitors.clear()
         self.running = False
 
-    def list_monitored_streamers(self) -> List[str]:
+    def list_monitored_streamers(self) -> list[str]:
         return list(self.monitors.keys())
 
     def wait(self) -> None:

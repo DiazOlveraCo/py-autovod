@@ -4,7 +4,6 @@ import time
 import threading
 import subprocess
 import datetime
-from typing import Optional
 from logger import logger
 from utils import determine_source, check_stream_live, load_config, fetch_metadata
 from processor import processor
