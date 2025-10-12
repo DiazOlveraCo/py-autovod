@@ -51,3 +51,12 @@ for package in "${packages[@]}"; do
     sudo $package_manager $install_command "$package" -y
   fi
 done
+
+# Copy .env.example to .env if .env does not exist
+if [ ! -f .env ]; then
+  cp .env.example .env
+  printf "${g}[$now] Copied .env.example to .env${c}\n"
+fi
+
+
+
