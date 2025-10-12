@@ -4,23 +4,22 @@ import os
 import sys
 import argparse
 from logger import logger
-from settings import config, CLIPCEPTION_ENABLED
+from utils import get_version_from_toml
+from settings import CLIPCEPTION_ENABLED
 from stream_manager import StreamManager
 
 
 def main() -> int:
-    version = config.get("general", "version", fallback="1.0.0")
+    version = get_version_from_toml()
 
-    logger.info(f"Starting PyAutoVOD v{version}")
+    logger.info(f"Starting Py-AutoVOD v{version}")
 
     parser = argparse.ArgumentParser(
         description="AutoVOD - Automatic VOD downloader and uploader for Twitch, Kick, and YouTube"
     )
 
     parser.add_argument("-n", "--name", help="Single streamer name to monitor")
-    parser.add_argument(
-        "-v", "--version", action="store_true", help="Display the current version"
-    )
+    parser.add_argument("-v", "--version", action="store_true", help="Display the current version")
     args = parser.parse_args()
 
     recordings_dir = "recordings"

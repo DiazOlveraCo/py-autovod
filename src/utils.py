@@ -1,11 +1,17 @@
 import os
+import sys
 import subprocess
 from typing import List, Optional, Tuple, Dict
 from logger import logger
+from pathlib import Path
 import configparser
 import json
 import time
 
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
 
 def run_command(
     cmd: List[str],
@@ -76,6 +82,33 @@ def fetch_metadata(streamer_url: str) -> dict:
     except json.JSONDecodeError as e:
         print(f"JSON decode error: {e}")
         return None
+    
+
+def get_version_from_toml() -> str:
+    """Extracts the version string from a pyproject.toml file.
+    
+    Supports both PEP 621 ([project]) and Poetry ([tool.poetry]) formats.
+    Works with Python 3.10+."""
+    path = Path("pyproject.toml")
+    try: 
+        if not path.exists():
+            raise FileNotFoundError(f"File {path} is missing!")
+
+        with open(path, "rb") as f:
+            data = tomllib.load(f)
+
+        # PEP 621 standard
+        if "project" in data and "version" in data["project"]:
+            return data["project"]["version"]
+
+        # Poetry format
+        poetry_section = data.get("tool", {}).get("poetry", {})
+        if "version" in poetry_section:
+            return poetry_section["version"]
+    except Exception as e:
+        logger.error(f"Error getting version from {path}: {e}")
+
+    return "0.0.0" 
 
 
 def load_config(config_name: str) -> Optional[configparser.ConfigParser]:
