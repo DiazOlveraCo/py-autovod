@@ -15,6 +15,7 @@ class StreamMonitor(threading.Thread):
     def __init__(self, streamer_name: str, retry_delay: int = 60):
         super().__init__(name=f"m-{streamer_name}")
         self.streamer_name = streamer_name.lower()
+        self.DATETIME_FORMAT = "%d-%m-%Y-%H-%M-%S"
         self.retry_delay = retry_delay
         self.running = False
         self.config = None
@@ -24,26 +25,21 @@ class StreamMonitor(threading.Thread):
         self._load_configuration()
 
     def _load_configuration(self) -> bool:
-        self.config = load_config(self.streamer_name)
+        self.config = load_config(self.streamer_name) or load_config("default")
         if not self.config:
-            self.config = load_config("default")
-            if not self.config:
-                logger.error("Failed to load default config file.")
-                return False
+            logger.error("Failed to load configuration file.")
+            return False
 
         # Get stream source from config
-        try:
-            stream_source = self.config["source"]["stream_source"]
-            self.stream_source_url = determine_source(stream_source, self.streamer_name)
-        except KeyError:
-            logger.error(f"Missing source configuration for {self.streamer_name}")
-            return False
-
-        if not self.stream_source_url:
-            logger.error(
-                f"Unknown stream source: {stream_source} for {self.streamer_name}"
-            )
-            return False
+        match self.config.get("source", {}):
+            case {"stream_source": stream_source}:
+                self.stream_source_url = determine_source(stream_source, self.streamer_name)
+                if not self.stream_source_url:
+                    logger.error(f"Unknown stream source: {stream_source} for {self.streamer_name}")
+                    return False
+            case _:
+                logger.error(f"Missing source configuration for {self.streamer_name}")
+                return False
 
         return True
 
@@ -52,7 +48,7 @@ class StreamMonitor(threading.Thread):
             return False, ""
 
         quality = self.config["streamlink"]["quality"]
-        current_time = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+        current_time = datetime.datetime.now().strftime(self.DATETIME_FORMAT)
         stream_title = self.stream_metadata.get("title", "")
         stream_id = self.stream_metadata.get("id", current_time)
 
@@ -65,16 +61,14 @@ class StreamMonitor(threading.Thread):
 
         if self.config.has_option("streamlink", "flags"):
             flags = self.config.get("streamlink", "flags").strip(",").split(",")
-            flags = [flag.strip() for flag in flags if flag.strip()]
-            command.extend(flags)
+            command.extend([flag.strip() for flag in flags if flag.strip()])
 
         try:
             # Start the download process
             self.current_process = subprocess.Popen(
                 command, stdout=sys.stdout, stderr=subprocess.DEVNULL
             )
-            retcode = self.current_process.wait()  # Wait until the stream ends
-            success = retcode == 0
+            success = self.current_process.wait() == 0 # Wait until the stream ends
 
             if success:
                 if output_path and os.path.exists(output_path):
@@ -111,9 +105,7 @@ class StreamMonitor(threading.Thread):
                     download_success, video_path = self.download_video()
 
                     if download_success:
-                        logger.success(
-                            f"Stream for {self.streamer_name} downloaded successfully"
-                        )
+                        logger.success(f"Stream for {self.streamer_name} downloaded successfully")
                     else:
                         logger.warning(
                             f"Failed to download stream for {self.streamer_name}"

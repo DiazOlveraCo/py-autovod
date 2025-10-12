@@ -13,7 +13,7 @@ CLIPCEPTION_ENABLED = config.get("clipception", "enabled").lower() == "true"
 # Check for OpenRouter API key
 if not API_KEY:
     print("Warning: OPEN_ROUTER_KEY environment variable is not set. Clipception will be disabled.")
+    print("You can set it with: export OPEN_ROUTER_KEY='your_key'")
     CLIPCEPTION_ENABLED = False
-    # raise ValueError("Please set it with: export OPEN_ROUTER_KEY='your_key_here'")
 
 

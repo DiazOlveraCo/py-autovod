@@ -9,18 +9,19 @@ from settings import CLIPCEPTION_ENABLED
 from stream_manager import StreamManager
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="AutoVOD - Automatic VOD downloader and uploader for Twitch, Kick, and YouTube")
+    parser.add_argument("-n", "--name", help="Single streamer name to monitor")
+    parser.add_argument("-v", "--version", action="store_true", help="Display the current version")
+    return parser.parse_args()
+
+
 def main() -> int:
     version = get_version_from_toml()
 
     logger.info(f"Starting Py-AutoVOD v{version}")
 
-    parser = argparse.ArgumentParser(
-        description="AutoVOD - Automatic VOD downloader and uploader for Twitch, Kick, and YouTube"
-    )
-
-    parser.add_argument("-n", "--name", help="Single streamer name to monitor")
-    parser.add_argument("-v", "--version", action="store_true", help="Display the current version")
-    args = parser.parse_args()
+    args = parse_args()
 
     recordings_dir = "recordings"
     if not os.path.exists(recordings_dir):
