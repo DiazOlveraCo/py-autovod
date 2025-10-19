@@ -4,7 +4,7 @@
 FROM python:3.13-slim
 
 # Set ENV variables
-ENV TZ=America/New_York
+ENV TZ=America/Los_Angeles
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Default display to :99
